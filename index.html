@@ -181,20 +181,29 @@
 </style>
 </head>
 <body>
-<div id="user-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:998;flex-direction:column;align-items:center;justify-content:center">
-  <div style="width:90%;max-width:320px">
-    <div style="font-size:11px;color:#555;letter-spacing:3px;text-align:center;margin-bottom:20px">選擇使用者</div>
-    <div onclick="switchUser('alex')" id="user-btn-alex" style="background:#111;border:1px solid #1e1e1e;padding:18px 20px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:14px">
-      <div style="font-size:28px">💪</div>
-      <div><div style="font-size:15px;font-weight:700">Alex</div><div style="font-size:11px;color:#555;margin-top:2px">173CM · 70KG · 薄肌</div></div>
+<!-- 第一次選擇用戶畫面 -->
+<div id="onboarding" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9999;flex-direction:column;align-items:center;justify-content:center">
+  <div style="width:90%;max-width:320px;text-align:center">
+    <div style="font-size:11px;color:#c8f537;letter-spacing:4px;margin-bottom:16px">FITNESS</div>
+    <div style="font-size:28px;font-weight:900;margin-bottom:8px">你是誰？</div>
+    <div style="font-size:13px;color:#555;margin-bottom:32px">選擇後將鎖定此裝置，無法更改</div>
+    <div onclick="selectUser('alex')" style="background:#111;border:1px solid #1e1e1e;padding:20px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
+      <div style="font-size:32px">💪</div>
+      <div>
+        <div style="font-size:16px;font-weight:700">Alex</div>
+        <div style="font-size:11px;color:#555;margin-top:3px">173CM · 70KG · 薄肌</div>
+      </div>
     </div>
-    <div onclick="switchUser('kelly')" id="user-btn-kelly" style="background:#111;border:1px solid #1e1e1e;padding:18px 20px;margin-bottom:20px;cursor:pointer;display:flex;align-items:center;gap:14px">
-      <div style="font-size:28px">🌸</div>
-      <div><div style="font-size:15px;font-weight:700">Kelly</div><div style="font-size:11px;color:#555;margin-top:2px">160CM · 57KG · 塑形</div></div>
+    <div onclick="selectUser('kelly')" style="background:#111;border:1px solid #1e1e1e;padding:20px;cursor:pointer;display:flex;align-items:center;gap:16px;text-align:left">
+      <div style="font-size:32px">🌸</div>
+      <div>
+        <div style="font-size:16px;font-weight:700">Kelly</div>
+        <div style="font-size:11px;color:#555;margin-top:3px">160CM · 57KG · 塑形</div>
+      </div>
     </div>
-    <button onclick="document.getElementById('user-modal').style.display='none'" style="background:none;border:1px solid #333;color:#555;padding:10px;width:100%;font-size:12px;cursor:pointer">取消</button>
   </div>
 </div>
+
 <div id="celebrate" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:999">
   <div style="font-size:72px;animation:pop 0.4s ease">🎉</div>
   <div style="font-size:28px;font-weight:900;color:#c8f537;margin:16px 0 8px;letter-spacing:2px">今日完成！</div>
@@ -213,7 +222,6 @@
         <div class="hero-eyebrow">✦ 個人化計畫 · 23歲</div>
         <div class="hero-title" id="hero-name">FITNESS</div>
         <div class="hero-sub" id="hero-stats-sub">173CM · 70KG · 薄肌</div>
-        <button onclick="openUserModal()" style="margin-top:8px;background:none;border:1px solid #333;color:#555;padding:4px 12px;font-size:10px;letter-spacing:2px;cursor:pointer">切換用戶 ⇄</button>
       </div>
       <div class="stats-grid">
         <div class="stat-cell"><div class="stat-val" id="hero-kcal">2,400</div><div class="stat-lab">每日熱量</div></div>
@@ -242,6 +250,7 @@
           <input class="inp" id="inp-w" placeholder="體重 (kg)" type="number" step="0.1" inputmode="decimal">
           <input class="inp" id="inp-f" placeholder="體脂 % (選填)" type="number" step="0.1" inputmode="decimal">
         </div>
+        <input class="inp" id="inp-target" placeholder="目標體重 (kg，選填)" type="number" step="0.1" inputmode="decimal" style="margin-bottom:6px">
         <button class="btn-save" onclick="saveProgress()">記錄 ＋</button>
       </div>
       <div id="prog-list"></div>
@@ -249,14 +258,6 @@
     </div>
 
     <div id="tab1" class="tab-content">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-        <span class="label">01</span><span class="section-title">訓練計畫</span>
-      </div>
-      <div style="font-size:11px;color:var(--sub);margin-bottom:12px">點擊動作查看要領 ▼</div>
-      <div id="training-days"></div>
-    </div>
-
-    <div id="tab2" class="tab-content">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
         <span class="label">🔥</span><span class="section-title">今日累積攝取</span>
       </div>
@@ -334,7 +335,7 @@
       <div id="diet-history-list"></div>
     </div>
 
-    <div id="tab3" class="tab-content">
+    <div id="tab1" class="tab-content">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
         <span class="label">LOG</span><span class="section-title">訓練日誌</span>
       </div>
@@ -351,7 +352,7 @@
       <div class="hint-box" style="margin-top:12px">📈 同重量穩定做到上限次數後，加 2.5–5 kg。休息 60–90 秒。</div>
     </div>
 
-    <div id="tab4" class="tab-content">
+    <div id="tab1" class="tab-content">
       <div id="timer-wrap">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
           <span class="label">⏱</span><span style="font-size:19px;font-weight:900;letter-spacing:2px">休息計時器</span>
@@ -386,10 +387,9 @@
 
   <div id="tabbar">
     <button class="tab-btn active" onclick="switchTab(0)">今日</button>
-    <button class="tab-btn" onclick="switchTab(1)">訓練</button>
-    <button class="tab-btn" onclick="switchTab(2)">飲食</button>
-    <button class="tab-btn" onclick="switchTab(3)">日誌</button>
-    <button class="tab-btn" onclick="switchTab(4)">計時</button>
+    <button class="tab-btn" onclick="switchTab(1)">飲食</button>
+    <button class="tab-btn" onclick="switchTab(2)">日誌</button>
+    <button class="tab-btn" onclick="switchTab(3)">計時</button>
   </div>
 </div>
 
@@ -460,30 +460,24 @@ const FB_URL = "https://fitness-app-15c98-default-rtdb.firebaseio.com";
 async function fbGet(path) {
   try {
     const r = await fetch(`${FB_URL}/${path}.json`);
+    if (!r.ok) { console.error('fbGet failed:', path, r.status); return null; }
     return await r.json();
-  } catch { return null; }
+  } catch(e) { console.error('fbGet error:', path, e); return null; }
 }
 
 async function fbSet(path, val) {
   try {
-    await fetch(`${FB_URL}/${path}.json`, {
+    const r = await fetch(`${FB_URL}/${path}.json`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(val)
     });
-  } catch {}
+    if (!r.ok) console.error('fbSet failed:', path, r.status);
+  } catch(e) { console.error('fbSet error:', path, e); }
 }
 
-// Firebase 即時監聽（SSE long-polling）
-const fbListeners = {};
-function fbListen(path, cb) {
-  if (fbListeners[path]) fbListeners[path].close();
-  const es = new EventSource(`${FB_URL}/${path}.json`);
-  es.addEventListener('put', e => {
-    try { cb(JSON.parse(e.data).data); } catch {}
-  });
-  fbListeners[path] = es;
-}
+// Firebase 即時監聽已移除，改為純讀寫模式避免跨用戶資料污染
+// 同步方式：打開 app 或切換用戶時從 Firebase 拉取最新資料
 
 // 本地快取，離線時仍可用
 function ls(key, def) {
@@ -501,7 +495,7 @@ let todayCalories = 0, todayProtein = 0, todayFoodLog = [];
 const DAYS_DATA = [], ALL_EX = [];
 
 function userKey(s) { return `${currentUser}/${s}`; }
-const dietKey = () => `${userKey("diet")}/${todayKey.replace(/\//g,'-')}`;
+const dietKey = () => `${currentUser}/diet/${todayKey.replace(/\//g,'-')}`;
 
 async function loadUserState() {
   // 讀 Firebase，同時用 localStorage 作為離線備份
@@ -513,8 +507,9 @@ async function loadUserState() {
     fbGet(userKey("last_training")),
   ]);
 
-  progressEntries = prog ? (Array.isArray(prog) ? prog : Object.values(prog)) : ls(userKey("progress").replace('/','_'), []);
-  trainingLogs = logs || ls(userKey("logs").replace('/','_'), {});
+  const toArr = v => !v ? [] : Array.isArray(v) ? v : Object.values(v).filter(x => x && x.w);
+  progressEntries = toArr(prog);
+  trainingLogs = logs || {};
   dayChecked = (checked || {})[todayKey.replace(/\//g,'-')] || {};
   const d = diet || { calories:0, protein:0, log:[] };
   todayCalories = d.calories || 0;
@@ -527,33 +522,32 @@ async function loadUserState() {
   DAYS_DATA.length = 0; USERS[currentUser].days.forEach(d => DAYS_DATA.push(d));
   ALL_EX.length = 0; DAYS_DATA.flatMap(d => d.ex.map(e => e.zh)).forEach(e => ALL_EX.push(e));
   todayOverride = null;
-
-  // 設置即時監聽
-  setupListeners();
 }
 
-function setupListeners() {
-  // 監聽另一台裝置的更新並即時刷新
-  fbListen(userKey("progress"), data => {
-    if (!data) return;
-    progressEntries = Array.isArray(data) ? data : Object.values(data);
-    renderProgress(); renderToday();
-  });
-  fbListen(userKey("logs"), data => {
-    trainingLogs = data || {};
-    renderLog(); renderToday();
-  });
-  fbListen(dietKey(), data => {
-    if (!data) return;
-    todayCalories = data.calories || 0;
-    todayProtein = data.protein || 0;
-    todayFoodLog = data.log || [];
-    updateDietDisplay();
-  });
-  fbListen(userKey("checked"), data => {
-    dayChecked = (data || {})[todayKey.replace(/\//g,'-')] || {};
-    renderToday(); renderHeroBanner();
-  });
+// SSE 監聽已停用，改為純讀寫模式
+// SSE 監聽已停用
+function setupListeners() {}
+
+// ── User (locked per device) ──────────────────────────────────────────
+async function selectUser(uid) {
+  ls_set("fitness_current_user", uid);
+  currentUser = uid;
+  document.getElementById('onboarding').style.display = 'none';
+  showLoading(true);
+  await loadUserState();
+  showLoading(false);
+  updateHeroUser();
+  renderAll();
+}
+
+function updateHeroUser() {
+  const u = USERS[currentUser];
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+  set('hero-name', u.name);
+  set('hero-stats-sub', u.stats);
+  set('hero-kcal', u.kcalTarget.toLocaleString());
+  set('hero-protein', u.proteinTarget + 'g');
+  set('hero-days', u.days.length + '天');
 }
 
 async function saveChecked() {
@@ -574,18 +568,6 @@ function getRecommendedDayIdx() {
   return (last.idx + 1) % DAYS_DATA.length;
 }
 
-async function switchUser(uid) {
-  currentUser = uid; ls_set("fitness_current_user", uid);
-  openCues = {}; openLogSections = {}; openDietHistory = {};
-  // 關閉舊監聽
-  Object.values(fbListeners).forEach(es => es.close());
-  document.getElementById('user-modal').style.display = 'none';
-  showLoading(true);
-  await loadUserState();
-  showLoading(false);
-  renderAll();
-}
-
 function showLoading(show) {
   let el = document.getElementById('loading-overlay');
   if (!el) {
@@ -601,25 +583,8 @@ function showLoading(show) {
 function renderAll() {
   if (!document.getElementById('today-section')) return;
   updateHeroUser(); renderHeroBanner(); renderToday();
-  renderTraining(); renderProgress(); renderLogSelect();
+  renderProgress(); renderLogSelect();
   renderLog(); updateDietDisplay(); renderDietHistory();
-}
-
-function openUserModal() {
-  updateHeroUser();
-  document.getElementById('user-modal').style.display = 'flex';
-}
-
-function updateHeroUser() {
-  const u = USERS[currentUser];
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
-  set('hero-name', u.name); set('hero-stats-sub', u.stats);
-  set('hero-kcal', u.kcalTarget.toLocaleString());
-  set('hero-protein', u.proteinTarget + 'g');
-  set('hero-days', Object.keys(u.trainingDays).length + '天');
-  document.querySelectorAll('[id^="user-btn-"]').forEach(el => {
-    el.style.borderColor = el.id === `user-btn-${currentUser}` ? A : '#1e1e1e';
-  });
 }
 
 // ── Smart Today Logic ─────────────────────────────────────────────────
@@ -633,7 +598,7 @@ function switchTab(i) {
   document.querySelectorAll('.tab-btn').forEach((el,j) => el.classList.toggle('active', j===i));
   document.getElementById('scroll').scrollTop = 0;
   currentTab = i;
-  if (i === 4) { updateTimerDisplay(); syncTimerBtn(); }
+  if (i === 3) { updateTimerDisplay(); syncTimerBtn(); }
 }
 
 // ── Hero collapse ─────────────────────────────────────────────────────
@@ -743,7 +708,7 @@ function renderExList(exercises, prefix, showCheck) {
   }).join('');
 }
 
-function toggleCue(k) { openCues[k] = !openCues[k]; renderToday(); renderTraining(); }
+function toggleCue(k) { openCues[k] = !openCues[k]; renderToday(); }
 
 function toggleCheck(i) {
   dayChecked[i] = !dayChecked[i]; saveChecked(); renderToday(); renderHeroBanner();
@@ -757,7 +722,7 @@ function toggleCheck(i) {
 
 function closeCelebrate(goToLog) {
   document.getElementById('celebrate').classList.remove('show');
-  if (goToLog) switchTab(3);
+  if (goToLog) switchTab(2);
 }
 
 function playBeep() {
@@ -773,19 +738,6 @@ function playBeep() {
 }
 
 // ── Training ──────────────────────────────────────────────────────────
-function renderTraining() {
-  document.getElementById('training-days').innerHTML = DAYS_DATA.map((d,di) => `
-    <div class="card" style="margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border)">
-        <div style="font-size:26px;font-weight:900;color:var(--a);min-width:36px">${d.id}</div>
-        <div><div style="font-size:14px;font-weight:600">${d.title}</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:2px">${d.sub}</div></div>
-      </div>
-      <div style="padding:6px 18px;font-size:10px;color:#444;border-bottom:1px solid #1a1a1a">✦ ${d.note}</div>
-      ${renderExList(d.ex,`d${di}`,false)}
-    </div>`).join('');
-}
-
 // ── Diet ──────────────────────────────────────────────────────────────
 function updateDietDisplay() {
   const u = USERS[currentUser];
@@ -801,19 +753,20 @@ function updateDietDisplay() {
   renderFoodLog();
 }
 
-function dietAdd(cal, pro, name, btn) {
+async function dietAdd(cal, pro, name, btn) {
   todayCalories += cal; todayProtein += pro;
   todayFoodLog.push({ name: name||'自訂', cal, pro });
   if (navigator.vibrate) navigator.vibrate(40);
   if (btn) { btn.classList.add('flash'); setTimeout(()=>btn.classList.remove('flash'),300); }
-  saveDietData();
+  await saveDietData();
 }
 
-function removeFoodLog(idx) {
+async function removeFoodLog(idx) {
   const item = todayFoodLog[idx]; if (!item) return;
-  todayCalories = Math.max(0,todayCalories-item.cal);
-  todayProtein = Math.max(0,todayProtein-item.pro);
-  todayFoodLog.splice(idx,1); saveDietData();
+  todayCalories = Math.max(0, todayCalories - item.cal);
+  todayProtein = Math.max(0, todayProtein - item.pro);
+  todayFoodLog.splice(idx, 1);
+  await saveDietData();
 }
 
 function renderFoodLog() {
@@ -830,7 +783,7 @@ function renderFoodLog() {
     </div>`).join('');
 }
 
-function saveCustomDiet() {
+async function saveCustomDiet() {
   const c = document.getElementById('inp-cal'), p = document.getElementById('inp-pro');
   const ac = parseInt(c.value)||0, ap = parseInt(p.value)||0;
   if (!ac && !ap) return;
@@ -838,74 +791,102 @@ function saveCustomDiet() {
   todayFoodLog.push({ name:'✍️ 自訂', cal:ac, pro:ap });
   c.value=''; p.value=''; document.activeElement.blur();
   if (navigator.vibrate) navigator.vibrate(40);
-  saveDietData();
+  await saveDietData();
 }
 
 async function saveDietData() {
   const safeDate = todayKey.replace(/\//g,'-');
   const data = { calories:todayCalories, protein:todayProtein, log:todayFoodLog };
-  await fbSet(`${currentUser}/diet/${safeDate}`, data);
-  let hi = await fbGet(`${currentUser}/diet_history_index`) || [];
-  if (!Array.isArray(hi)) hi = Object.values(hi);
+  await fbSet(dietKey(), data);
+  ls_set(`${currentUser}_diet_${safeDate}`, data);
+  let hi = ls(`${currentUser}_diet_index`, []);
   if (!hi.includes(safeDate)) {
-    hi = [safeDate,...hi].slice(0,30);
-    await fbSet(`${currentUser}/diet_history_index`, hi);
+    hi = [safeDate, ...hi].slice(0, 30);
+    ls_set(`${currentUser}_diet_index`, hi);
+    await fbSet(userKey("diet_history_index"), hi);
   }
-  updateDietDisplay(); renderDietHistory();
+  updateDietDisplay();
+  renderDietHistory();
 }
 
-function renderDietHistory() {
+async function renderDietHistory() {
   const el = document.getElementById('diet-history-list'); if (!el) return;
   const safeToday = todayKey.replace(/\//g,'-');
-  fbGet(`${currentUser}/diet_history_index`).then(hi => {
-    if (!hi) { el.innerHTML=`<div style="text-align:center;color:#333;font-size:13px;padding:20px 0">還沒有歷史紀錄</div>`; return; }
-    const arr = Array.isArray(hi) ? hi : Object.values(hi);
-    const past = arr.filter(d => d !== safeToday);
-    if (!past.length) { el.innerHTML=`<div style="text-align:center;color:#333;font-size:13px;padding:20px 0">還沒有歷史紀錄</div>`; return; }
-    const u = USERS[currentUser];
-    Promise.all(past.map(date => fbGet(`${currentUser}/diet/${date}`).then(data => ({ date, data: data||{calories:0,protein:0,log:[]} }))))
-      .then(results => {
-        el.innerHTML = results.map(({date, data}) => {
-          const isOpen = openDietHistory[date];
-          const kp = Math.min(100,(data.calories/u.kcalTarget)*100).toFixed(0);
-          const pp = Math.min(100,(data.protein/u.proteinTarget)*100).toFixed(0);
-          const kc = data.calories>u.kcalTarget?RD:A;
-          return `<div class="log-section" style="margin-bottom:6px">
-            <div class="log-header" onclick="toggleDietHistory('${date}')">
-              <div><div style="font-size:13px;font-weight:600">${date}</div>
-                <div style="font-size:10px;color:var(--sub);margin-top:3px">
-                  <span style="color:${kc}">${data.calories} kcal</span>
-                  <span style="margin:0 6px;color:#333">·</span>
-                  <span style="color:var(--a)">${data.protein}g 蛋白質</span>
-                </div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:11px;color:var(--sub)">${isOpen?'▲':'▼'}</div>
-                <div style="margin-top:6px;width:60px">
-                  <div style="height:3px;background:#1e1e1e;border-radius:2px;overflow:hidden;margin-bottom:2px"><div style="height:100%;width:${kp}%;background:${kc};border-radius:2px"></div></div>
-                  <div style="height:3px;background:#1e1e1e;border-radius:2px;overflow:hidden"><div style="height:100%;width:${pp}%;background:${A2};border-radius:2px"></div></div>
-                </div>
-              </div>
+  const snapshotUser = currentUser; // 捕捉當前用戶，非同步後核對
+
+  // 先用本地 index
+  let hi = ls(`${snapshotUser}_diet_index`, null);
+  if (!hi) {
+    hi = await fbGet(`${snapshotUser}/diet_history_index`);
+    if (hi && !Array.isArray(hi)) hi = Object.values(hi);
+    if (hi) ls_set(`${snapshotUser}_diet_index`, hi);
+  }
+
+  if (currentUser !== snapshotUser) return; // 用戶已切換，放棄
+
+  const past = (hi || []).filter(d => d !== safeToday);
+  if (!past.length) {
+    el.innerHTML = `<div style="text-align:center;color:#333;font-size:13px;padding:20px 0">還沒有歷史紀錄</div>`;
+    return;
+  }
+
+  const u = USERS[snapshotUser];
+  const results = await Promise.all(past.map(async date => {
+    let data = ls(`${snapshotUser}_diet_${date}`, null);
+    if (!data) {
+      data = await fbGet(`${snapshotUser}/diet/${date}`);
+      if (data) ls_set(`${snapshotUser}_diet_${date}`, data);
+    }
+    return { date, data: data || { calories:0, protein:0, log:[] } };
+  }));
+
+  if (currentUser !== snapshotUser) return; // 再次確認
+
+  el.innerHTML = results.map(({ date, data }) => {
+    const isOpen = openDietHistory[date];
+    const kp = Math.min(100, (data.calories / u.kcalTarget) * 100).toFixed(0);
+    const pp = Math.min(100, (data.protein / u.proteinTarget) * 100).toFixed(0);
+    const kc = data.calories > u.kcalTarget ? RD : A;
+    return `<div class="log-section" style="margin-bottom:6px">
+      <div class="log-header" onclick="toggleDietHistory('${date}')">
+        <div>
+          <div style="font-size:13px;font-weight:600">${date}</div>
+          <div style="font-size:10px;color:var(--sub);margin-top:3px">
+            <span style="color:${kc}">${data.calories} kcal</span>
+            <span style="margin:0 6px;color:#333">·</span>
+            <span style="color:var(--a)">${data.protein}g 蛋白質</span>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--sub)">${isOpen ? '▲' : '▼'}</div>
+          <div style="margin-top:6px;width:60px">
+            <div style="height:3px;background:#1e1e1e;border-radius:2px;overflow:hidden;margin-bottom:2px">
+              <div style="height:100%;width:${kp}%;background:${kc};border-radius:2px"></div>
             </div>
-            <div class="log-body ${isOpen?'open':''}">
-              ${data.log&&data.log.length?data.log.map(item=>`
-                <div class="food-log-item">
-                  <span class="food-log-name">${item.name}</span>
-                  <span class="food-log-kcal">${item.cal} kcal</span>
-                  <span class="food-log-pro">${item.pro}g</span>
-                </div>`).join(''):`<div style="padding:12px 16px;font-size:12px;color:#333">沒有詳細紀錄</div>`}
+            <div style="height:3px;background:#1e1e1e;border-radius:2px;overflow:hidden">
+              <div style="height:100%;width:${pp}%;background:${A2};border-radius:2px"></div>
             </div>
-          </div>`;
-        }).join('');
-      });
-  });
+          </div>
+        </div>
+      </div>
+      <div class="log-body ${isOpen ? 'open' : ''}">
+        ${data.log && data.log.length ? data.log.map(item => `
+          <div class="food-log-item">
+            <span class="food-log-name">${item.name}</span>
+            <span class="food-log-kcal">${item.cal} kcal</span>
+            <span class="food-log-pro">${item.pro}g</span>
+          </div>`).join('') : `<div style="padding:12px 16px;font-size:12px;color:#333">沒有詳細紀錄</div>`}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function toggleDietHistory(date) { openDietHistory[date]=!openDietHistory[date]; renderDietHistory(); }
 
-function resetDietTracker() {
+async function resetDietTracker() {
   if (confirm('確定要將今天的飲食紀錄歸零嗎？')) {
-    todayCalories=0; todayProtein=0; todayFoodLog=[]; saveDietData();
+    todayCalories=0; todayProtein=0; todayFoodLog=[];
+    await saveDietData();
   }
 }
 
@@ -914,76 +895,89 @@ function renderProgress() {
   const latest = progressEntries[0], prev2 = progressEntries[1];
   const el = document.getElementById('prog-stats');
   if (latest) {
-    const wd = prev2?(parseFloat(latest.w)-parseFloat(prev2.w)).toFixed(1):null;
+    const wd = prev2 ? (parseFloat(latest.w) - parseFloat(prev2.w)).toFixed(1) : null;
     el.innerHTML = `<div class="prog-grid">
-      <div class="prog-card"><div class="prog-val">${latest.w}<span style="font-size:12px;color:var(--sub);margin-left:3px">kg</span></div>
+      <div class="prog-card">
+        <div class="prog-val">${latest.w}<span style="font-size:12px;color:var(--sub);margin-left:3px">kg</span></div>
         <div class="prog-lab">最新體重</div>
-        ${wd!==null?`<div style="font-size:11px;color:${parseFloat(wd)>0?RD:A};margin-top:4px">${parseFloat(wd)>0?'+':''}${wd} kg</div>`:''}
+        ${wd !== null ? `<div style="font-size:11px;color:${parseFloat(wd)>0?RD:A};margin-top:4px">${parseFloat(wd)>0?'+':''}${wd} kg</div>` : ''}
       </div>
-      ${latest.f?`<div class="prog-card"><div class="prog-val">${latest.f}<span style="font-size:12px;color:var(--sub);margin-left:3px">%</span></div><div class="prog-lab">最新體脂</div></div>`:''}
+      ${latest.f ? `<div class="prog-card"><div class="prog-val">${latest.f}<span style="font-size:12px;color:var(--sub);margin-left:3px">%</span></div><div class="prog-lab">最新體脂</div></div>` : ''}
     </div>`;
   } else el.innerHTML = '';
 
   const cw = document.getElementById('chart-wrap');
-  if (progressEntries.length>=2) { cw.style.display='block'; renderWeightChart(); } else cw.style.display='none';
+  if (progressEntries.length >= 2) { cw.style.display = 'block'; renderWeightChart(); }
+  else cw.style.display = 'none';
 
   const listEl = document.getElementById('prog-list');
-  if (progressEntries.length>0) {
-    listEl.innerHTML = `<div class="card">` + progressEntries.map((e,i) => {
-      const p = progressEntries[i+1], d = p?(parseFloat(e.w)-parseFloat(p.w)).toFixed(1):null;
+  if (progressEntries.length > 0) {
+    listEl.innerHTML = `<div class="card">` + progressEntries.map((e, i) => {
+      const p = progressEntries[i+1], d = p ? (parseFloat(e.w) - parseFloat(p.w)).toFixed(1) : null;
       return `<div class="log-entry">
         <div style="font-size:11px;color:var(--sub)">${e.date}</div>
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:13px;font-weight:600">${e.w} kg${e.f?` · ${e.f}%`:''}</span>
-          ${d!==null?`<span style="font-size:11px;color:${parseFloat(d)>0?RD:A}">${parseFloat(d)>0?'+':''}${d}</span>`:''}
+          <span style="font-size:13px;font-weight:600">${e.w} kg${e.f ? ` · ${e.f}%` : ''}</span>
+          ${d !== null ? `<span style="font-size:11px;color:${parseFloat(d)>0?RD:A}">${parseFloat(d)>0?'+':''}${d}</span>` : ''}
           <button class="log-del-btn" onclick="deleteProgress(${i})">✕</button>
         </div>
       </div>`;
     }).join('') + `</div>`;
-  } else listEl.innerHTML = `<div style="text-align:center;color:#333;font-size:13px;padding:20px 0">每週量一次體重，記錄進度！</div>`;
-}
-
-function deleteProgress(idx) {
-  progressEntries.splice(idx,1); ls_set(userKey("progress"),progressEntries); renderProgress();
-}
-
-function renderWeightChart() {
-  const svg = document.getElementById('weight-svg');
-  const pts = [...progressEntries].reverse().slice(-8);
-  const weights = pts.map(e=>parseFloat(e.w));
-  const targetW = parseFloat(localStorage.getItem(`${currentUser}_target_weight`)||'0');
-  const allVals = targetW?[...weights,targetW]:weights;
-  const min=Math.min(...allVals)-0.5, max=Math.max(...allVals)+0.5;
-  const W=280,H=70, x=i=>(i/(pts.length-1))*(W-20)+10, y=v=>H-((v-min)/(max-min))*(H-14)-7;
-  const path=weights.map((v,i)=>`${i===0?'M':'L'}${x(i)},${y(v)}`).join(' ');
-  const area=path+` L${x(weights.length-1)},${H} L${x(0)},${H} Z`;
-  const ty=targetW?y(targetW):null;
-  svg.innerHTML=`<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="${A}" stop-opacity="0.18"/>
-    <stop offset="100%" stop-color="${A}" stop-opacity="0"/>
-  </linearGradient></defs>
-  <path d="${area}" fill="url(#wg)"/>
-  <path d="${path}" fill="none" stroke="${A}" stroke-width="1.5" stroke-linejoin="round"/>
-  ${ty!==null?`<line x1="10" y1="${ty}" x2="${W-10}" y2="${ty}" stroke="${A2}" stroke-width="1" stroke-dasharray="4,3"/>
-    <text x="${W-8}" y="${ty-3}" text-anchor="end" fill="${A2}" font-size="8">目標 ${targetW}kg</text>`:''}
-  ${weights.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${A}"/>
-    <text x="${x(i)}" y="${y(v)-8}" text-anchor="middle" fill="#888" font-size="8">${v}</text>`).join('')}
-  ${pts.map((e,i)=>`<text x="${x(i)}" y="${H+2}" text-anchor="middle" fill="#444" font-size="7" dominant-baseline="hanging">${e.date.slice(5)}</text>`).join('')}`;
-}
-
-async function saveProgress() {
-  const w=document.getElementById('inp-w').value, f=document.getElementById('inp-f').value, t=document.getElementById('inp-target').value;
-  if (!w) return;
-  if (t) await fbSet(`${currentUser}/target_weight`, parseFloat(t));
-  progressEntries=[{date:todayKey,w,f},...progressEntries].slice(0,20);
-  await fbSet(`${currentUser}/progress`, progressEntries);
-  ['inp-w','inp-f','inp-target'].forEach(id=>document.getElementById(id).value='');
-  renderProgress();
+  } else {
+    listEl.innerHTML = `<div style="text-align:center;color:#333;font-size:13px;padding:20px 0">每週量一次體重，記錄進度！</div>`;
+  }
 }
 
 async function deleteProgress(idx) {
   progressEntries.splice(idx,1);
-  await fbSet(`${currentUser}/progress`, progressEntries);
+  await fbSet(userKey("progress"), progressEntries);
+  renderProgress();
+}
+
+async function renderWeightChart() {
+  const svg = document.getElementById('weight-svg');
+  const pts = [...progressEntries].reverse().slice(-8);
+  const weights = pts.map(e => parseFloat(e.w));
+  const savedTarget = await fbGet(userKey("target_weight"));
+  const targetW = parseFloat(savedTarget || 0);
+  const allVals = targetW ? [...weights, targetW] : weights;
+  if (!allVals.length) return;
+  const min = Math.min(...allVals) - 0.5, max = Math.max(...allVals) + 0.5;
+  const W = 280, H = 70;
+  const x = i => pts.length > 1 ? (i / (pts.length - 1)) * (W - 20) + 10 : W / 2;
+  const y = v => H - ((v - min) / (max - min)) * (H - 14) - 7;
+  const path = weights.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(v)}`).join(' ');
+  const area = weights.length > 1 ? path + ` L${x(weights.length-1)},${H} L${x(0)},${H} Z` : '';
+  const ty = targetW ? y(targetW) : null;
+  svg.innerHTML = `
+    <defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${A}" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="${A}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${area ? `<path d="${area}" fill="url(#wg)"/>` : ''}
+    <path d="${path}" fill="none" stroke="${A}" stroke-width="1.5" stroke-linejoin="round"/>
+    ${ty !== null ? `
+      <line x1="10" y1="${ty}" x2="${W-10}" y2="${ty}" stroke="${A2}" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="${W-8}" y="${ty-3}" text-anchor="end" fill="${A2}" font-size="8">目標 ${targetW}kg</text>` : ''}
+    ${weights.map((v, i) => `
+      <circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${A}"/>
+      <text x="${x(i)}" y="${y(v)-8}" text-anchor="middle" fill="#888" font-size="8">${v}</text>`).join('')}
+    ${pts.map((e, i) => `
+      <text x="${x(i)}" y="${H+2}" text-anchor="middle" fill="#444" font-size="7" dominant-baseline="hanging">${e.date.slice(5)}</text>`).join('')}`;
+}
+
+async function saveProgress() {
+  const w = document.getElementById('inp-w').value;
+  const f = document.getElementById('inp-f').value;
+  const tEl = document.getElementById('inp-target');
+  const t = tEl ? tEl.value : '';
+  if (!w) return;
+  if (t) await fbSet(userKey("target_weight"), parseFloat(t));
+  progressEntries = [{date: todayKey, w, f}, ...progressEntries].slice(0, 20);
+  await fbSet(userKey("progress"), progressEntries);
+  document.getElementById('inp-w').value = '';
+  document.getElementById('inp-f').value = '';
+  if (tEl) tEl.value = '';
   renderProgress();
 }
 
@@ -1025,7 +1019,7 @@ async function deleteLog(name, idx) {
   if (!trainingLogs[name]) return;
   trainingLogs[name].splice(idx,1);
   if (!trainingLogs[name].length) delete trainingLogs[name];
-  await fbSet(`${currentUser}/logs`, trainingLogs);
+  await fbSet(userKey("logs"), trainingLogs);
   renderLog(); renderToday();
 }
 
@@ -1034,7 +1028,7 @@ async function saveLog() {
   if (!w||!r) return;
   if (!trainingLogs[ex]) trainingLogs[ex]=[];
   trainingLogs[ex].unshift({date:todayKey,w,r});
-  await fbSet(`${currentUser}/logs`, trainingLogs);
+  await fbSet(userKey("logs"), trainingLogs);
   document.getElementById('log-w').value=''; document.getElementById('log-r').value='';
   document.activeElement.blur(); renderLog(); renderToday();
 }
@@ -1092,12 +1086,17 @@ function resetTimer() {
 // ── Init ──────────────────────────────────────────────────────────────
 window.onload = async function() {
   initScrollCollapse();
+  const saved = ls("fitness_current_user", null);
+  if (!saved) {
+    document.getElementById('onboarding').style.display = 'flex';
+    return;
+  }
+  currentUser = saved;
   showLoading(true);
   await loadUserState();
   showLoading(false);
-  updateHeroUser(); renderHeroBanner();
-  renderToday(); renderTraining(); renderProgress();
-  renderLogSelect(); renderLog(); updateDietDisplay(); renderDietHistory();
+  updateHeroUser();
+  renderAll();
 };
 
 </script>
