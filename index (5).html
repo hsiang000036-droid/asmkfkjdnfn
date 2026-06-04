@@ -1,0 +1,3217 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>FITNESS</title>
+<style>
+  :root {
+    --primary: #c8f537;
+    --blue: #537fc8;
+    --danger: #ff4444;
+    --bg: #0a0a0a;
+    --card: #111;
+    --border: #1e1e1e;
+    --text: #f0f0f0;
+    --sub: #555;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-t: env(safe-area-inset-top, 0px);
+    /* 舊名稱保留相容性 */
+    --a: var(--primary);
+    --a2: var(--blue);
+    --rd: var(--danger);
+
+    /* Spacing tokens — 只用這四種 */
+    --sp-xs: 8px;
+    --sp-sm: 12px;
+    --sp-md: 16px;
+    --sp-lg: 24px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,'Noto Sans TC','PingFang TC',Arial,sans-serif;overflow:hidden;touch-action:pan-y}
+  #app{display:flex;flex-direction:column;height:100%;height:100dvh}
+  #hero{flex-shrink:0;border-bottom:1px solid var(--border);transition:max-height 0.3s ease,padding 0.3s ease;overflow:hidden}
+  #hero.expanded{max-height:260px}
+  #hero.collapsed{max-height:52px}
+  #scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:auto}
+  #tabbar{flex-shrink:0;display:flex;border-top:1px solid var(--border);background:var(--bg);padding-bottom:var(--safe-b)}
+  .tab-btn{flex:1;min-height:44px;padding:var(--sp-sm) 0 var(--sp-xs);font-size:12px;font-weight:500;color:var(--sub);background:none;border:none;border-top:2px solid transparent;cursor:pointer;transition:color 0.2s,border-color 0.2s,background 0.2s;-webkit-user-select:none;user-select:none}
+  .tab-btn:active{background:rgba(200,245,55,0.05)}
+  .tab-btn.active{font-weight:800;color:var(--primary);border-top-color:var(--primary);letter-spacing:0.5px}
+  .tab-content{padding:var(--sp-md) var(--sp-md) 0;display:none}
+  .tab-content.active{display:block}
+  .card{background:var(--card);border:1px solid var(--border);margin-bottom:var(--sp-xs);overflow:hidden}
+  .label{font-size:10px;letter-spacing:2px;color:var(--a);border:1px solid var(--a);padding:2px 7px;font-weight:700;display:inline-block}
+  .section-title{font-size:19px;font-weight:900;letter-spacing:2px}
+  .hint-box{background:#0f1a00;border:1px solid var(--a);padding:var(--sp-sm) var(--sp-md);font-size:13px;color:var(--a);line-height:1.8;margin-bottom:var(--sp-lg)}
+  .divider{height:1px;background:var(--border);margin:var(--sp-lg) 0}
+  /* Hero */
+  #hero-collapsed{display:flex;padding:calc(12px + var(--safe-t)) 20px 12px;justify-content:space-between;align-items:center}
+  #hero-expanded{padding:calc(28px + var(--safe-t)) 24px 0}
+  .hero-eyebrow{font-size:11px;letter-spacing:4px;color:var(--a);text-transform:uppercase;margin-bottom:8px}
+  .hero-title{font-size:40px;font-weight:900;line-height:1;margin-bottom:6px}
+  .hero-sub{color:var(--sub);font-size:12px;letter-spacing:2px}
+  #today-banner{padding:10px 24px 14px;background:#0f1a00;border-top:1px solid var(--a)}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border)}
+  .stat-cell{padding:12px;text-align:center;border-right:1px solid var(--border)}
+  .stat-cell:last-child{border-right:none}
+  .stat-val{font-size:18px;font-weight:900;color:var(--a);line-height:1}
+  .stat-lab{font-size:9px;color:var(--sub);letter-spacing:1px;margin-top:3px}
+  /* Exercise list */
+  .ex-item{border-bottom:1px solid #161616}
+  .ex-item:last-child{border-bottom:none}
+  .ex-row{display:flex;align-items:stretch;min-height:58px}
+  .ex-main{flex:1;padding:12px 12px 10px 16px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:5px}
+  .ex-main:active{background:rgba(200,245,55,0.03)}
+  .ex-top{display:flex;align-items:center;gap:8px}
+  .ex-num{font-size:10px;font-weight:700;min-width:16px;color:var(--sub);flex-shrink:0}
+  .ex-num.done{color:var(--a)}
+  .ex-name{font-size:14px;font-weight:600;color:var(--text);flex:1}
+  .ex-name.done{color:#555;text-decoration:line-through}
+  .ex-sets{font-size:11px;color:var(--a);font-weight:700;flex-shrink:0}
+  .ex-bottom{display:flex;align-items:center;gap:8px;padding-left:24px}
+  .ex-en{font-size:10px;color:#3a3a3a}
+  .ex-last-log{font-size:10px;color:#555}
+  .ex-expand-hint{font-size:10px;color:#2a2a2a;margin-left:auto}
+  .ex-check-col{width:56px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-left:1px solid #1a1a1a;cursor:pointer}
+  .ex-check-col:active{background:rgba(200,245,55,0.06)}
+  .check-box{width:26px;height:26px;border-radius:3px;border:1.5px solid #333;background:transparent;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:all 0.15s}
+  .check-box.checked{background:var(--a);border-color:var(--a)}
+  .check-box.checked::after{content:"✓";font-size:14px;color:#000;font-weight:900;line-height:1}
+  .ex-cue{font-size:12px;color:#888;padding:8px 16px 12px 40px;line-height:1.8;background:#0d0d0d;border-top:1px solid #1a1a1a}
+
+  /* ── Exercise trend mini chart ───────────────────────── */
+  .ex-trend-wrap{background:#080d00;border-top:1px solid #1a2e00;padding:10px 16px 8px}
+  .ex-trend-title{font-size:9px;color:#4a6a00;letter-spacing:2px;margin-bottom:6px;display:flex;justify-content:space-between}
+  .ex-trend-title span{color:#888}
+  .ex-trend-svg{width:100%;overflow:visible}
+  .ex-trend-empty{font-size:11px;color:#333;padding:6px 0}
+
+  /* ── Weekly diet summary ─────────────────────────────── */
+  .week-diet-wrap{background:#0a0f00;border:1px solid #1e2a00;padding:var(--sp-sm) var(--sp-md);margin-bottom:var(--sp-xs)}
+  .week-diet-title{font-size:10px;letter-spacing:2px;color:var(--primary);margin-bottom:10px}
+  .week-diet-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+  .week-diet-card{background:#0f1500;border:1px solid #1e2800;padding:8px 10px}
+  .week-diet-val{font-size:20px;font-weight:900;color:var(--primary);line-height:1}
+  .week-diet-lab{font-size:9px;color:#555;letter-spacing:1px;margin-top:3px}
+  .week-diet-bar-row{display:flex;flex-direction:column;gap:4px}
+  .week-diet-bar-item{display:flex;align-items:center;gap:6px}
+  .week-diet-day{font-size:9px;color:#444;width:14px;text-align:center;flex-shrink:0}
+  .week-diet-bar-bg{flex:1;height:6px;background:#111;overflow:hidden}
+  .week-diet-bar-fill{height:100%;transition:width 0.3s ease}
+  .week-diet-bar-val{font-size:9px;color:#444;width:50px;text-align:right;flex-shrink:0}
+
+  /* ── Enhanced weight chart ───────────────────────────── */
+  .wc-chart-wrap{background:#080d00;border:1px solid #1a2e00;padding:12px 16px 10px;margin-bottom:var(--sp-xs)}
+  .wc-chart-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+  .wc-chart-title{font-size:9px;color:#4a6a00;letter-spacing:2px}
+  .wc-chart-stats{display:flex;gap:12px}
+  .wc-chart-stat{text-align:right}
+  .wc-chart-stat-val{font-size:14px;font-weight:900;color:var(--primary);line-height:1}
+  .wc-chart-stat-lab{font-size:8px;color:#444;letter-spacing:1px;margin-top:1px}
+  .wc-legend{display:flex;gap:10px;margin-top:6px}
+  .wc-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:#444}
+  .wc-legend-dot{width:8px;height:2px;border-radius:1px}
+
+  /* ── 1RM display ─────────────────────────────────────── */
+  .orm-wrap{background:#080d00;border:1px solid #1a2e00;padding:10px 14px;margin-top:4px}
+  .orm-title{font-size:9px;color:#4a6a00;letter-spacing:2px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+  .orm-title span{color:#333;font-size:9px}
+  .orm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+  .orm-card{background:#0f1500;border:1px solid #1e2800;padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+  .orm-name{font-size:11px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+  .orm-right{text-align:right;flex-shrink:0}
+  .orm-val{font-size:16px;font-weight:900;color:var(--primary);line-height:1}
+  .orm-unit{font-size:9px;color:#444}
+  .orm-delta{font-size:9px;margin-top:2px}
+  .orm-up{color:#c8f537}
+  .orm-down{color:#ff6b6b}
+  .orm-neutral{color:#444}
+
+  /* ── Quick log panel ───────────────────────────────── */
+  .quick-log{background:#0d1500;border-top:1px solid #1a2e00;padding:10px 16px 12px;display:flex;gap:8px;align-items:flex-end}
+  .quick-log-field{display:flex;flex-direction:column;gap:4px;flex:1}
+  .quick-log-label{font-size:9px;color:#4a6a00;letter-spacing:1px}
+  .quick-log-inp{background:#0a0a0a;border:1px solid #2a3a00;color:var(--text);padding:8px 10px;font-size:16px;outline:none;width:100%;-webkit-appearance:none;border-radius:0}
+  .quick-log-inp:focus{border-color:var(--primary)}
+  .quick-log-save{background:var(--primary);color:#000;border:none;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-end;height:36px}
+  .quick-log-skip{background:none;border:none;color:#555;font-size:11px;cursor:pointer;padding:8px 6px;align-self:flex-end;height:36px}
+  /* Progress bar */
+  #progress-bar-wrap{height:3px;background:#1e1e1e;margin-bottom:12px;border-radius:2px;overflow:hidden}
+  #progress-bar{height:100%;background:var(--a);border-radius:2px;transition:width 0.3s}
+  /* Meals */
+  .meal-row{background:var(--card);border:1px solid var(--border);padding:14px 18px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start}
+  /* Timer */
+  #timer-wrap{padding:20px 20px 0}
+  #timer-ring{position:relative;width:160px;height:160px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
+  #ring-svg{position:absolute;top:0;left:0;width:100%;height:100%;transform:rotate(-90deg)}
+  #ring-bg{fill:none;stroke:#1e1e1e;stroke-width:8}
+  #ring-fg{fill:none;stroke:var(--a);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 0.1s linear,stroke 0.3s}
+  #timer-inner{position:relative;z-index:1;text-align:center}
+  #timer-display{font-size:38px;font-weight:900;color:var(--a);line-height:1}
+  #timer-label{font-size:10px;color:var(--sub);letter-spacing:2px;margin-top:6px}
+  .preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:12px}
+  .preset-btn{background:#111;color:var(--sub);border:1px solid #2a2a2a;padding:10px 4px;font-size:12px;font-weight:600;cursor:pointer}
+  .preset-btn.active{background:var(--a);color:#000}
+  .timer-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
+  .btn-start{background:var(--a);color:#000;border:none;padding:var(--sp-sm);font-size:14px;font-weight:700;cursor:pointer}
+  .btn-reset{background:#111;color:var(--a);border:1px solid var(--a);padding:var(--sp-sm);font-size:14px;font-weight:700;cursor:pointer}
+  /* Log */
+  /* Chart */
+  #chart-wrap{background:#111;border:1px solid #1e1e1e;padding:var(--sp-sm) var(--sp-md);margin-bottom:var(--sp-xs)}
+  /* Inputs */
+  .inp{background:#0a0a0a;border:1px solid #2a2a2a;color:var(--text);padding:8px 10px;font-size:12px;outline:none;width:100%}
+  .inp-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}
+  .btn-save{background:var(--a);color:#000;border:none;padding:var(--sp-sm);font-size:12px;font-weight:700;cursor:pointer;width:100%}
+  select.inp{-webkit-appearance:none;appearance:none}
+  /* Week grid */
+  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:10px}
+  .week-cell{background:#111;border:1px solid var(--border);padding:10px 3px;text-align:center}
+  .week-cell.active-day{border-color:var(--a)}
+  .week-day{font-size:9px;color:var(--sub);margin-bottom:5px}
+  .week-content{font-size:10px;font-weight:600;line-height:1.5;color:var(--sub)}
+  .week-content.active{color:var(--primary)}
+  #celebrate{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:999}
+  #celebrate.show{display:flex}
+  .prog-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+  .prog-card{background:#111;border:1px solid var(--border);padding:var(--sp-sm) var(--sp-md)}
+  .prog-val{font-size:28px;font-weight:900;color:var(--a);line-height:1}
+  .prog-lab{font-size:10px;color:var(--sub);letter-spacing:2px;margin-top:4px}
+  /* Macro bars */
+  .macro-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .macro-label{font-size:11px;color:var(--sub);width:50px;flex-shrink:0}
+  .macro-bar-wrap{flex:1;height:3px;background:#1e1e1e;position:relative;overflow:hidden}
+  .macro-bar{height:100%;position:absolute;left:0;top:0}
+  .macro-val{font-size:12px;font-weight:700;min-width:44px;text-align:right}
+  /* Nutrition grid */
+  .nut-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+  .nut-card{background:#111;border:1px solid var(--border);padding:var(--sp-sm) var(--sp-md)}
+  .nut-val{font-size:26px;font-weight:900;color:var(--a);line-height:1}
+  .nut-unit{font-size:12px;color:var(--sub);margin-left:3px}
+  .nut-lab{font-size:10px;color:var(--sub);letter-spacing:2px;margin-top:4px}
+  /* Log accordion */
+  /* Rest day */
+  .rest-center{text-align:center;padding:36px 20px}
+
+  /* Day switcher */
+  .day-switcher{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+  .day-switch-btn{flex:1;min-width:0;padding:7px 4px;font-size:10px;font-weight:600;background:#111;color:#555;border:1px solid #2a2a2a;cursor:pointer;position:relative}
+  .day-switch-btn.active{background:var(--primary);color:#000;border-color:var(--primary)}
+  .day-switch-btn.rest-active{background:#333;color:#fff;border-color:#666}
+  .day-rec-dot{position:absolute;top:2px;right:3px;font-size:8px;color:var(--primary)}
+  .day-switch-hint{font-size:10px;color:#444;margin-bottom:12px}
+
+  /* Workout header */
+  .workout-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .done-badge{font-size:11px;color:var(--primary);border:1px solid var(--primary);padding:2px 8px}
+
+  /* Weight card */
+  .weight-card{background:#111;border:1px solid var(--border);padding:12px 16px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .weight-card-empty{font-size:12px;color:#444}
+
+  /* Exercise last log */
+  .ex-last-log{font-size:10px;color:#444}
+
+  /* ================= 📊 飲食選單與計算器專屬樣式 ================= */
+  .tracker-dashboard {
+    display: flex;
+    justify-content: space-around;
+    background: #0f1a00;
+    padding: 16px 12px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    text-align: center;
+    border: 1px solid var(--a);
+  }
+  .tracker-box { flex: 1; }
+  .tracker-box:first-child { border-right: 1px solid #1a2e00; }
+  .tracker-box .t-title { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+  .tracker-box .t-num { font-size: 26px; font-weight: 900; color: var(--a); margin: 4px 0; }
+  .tracker-box .t-unit { font-size: 11px; color: var(--sub); }
+  
+  .food-menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .food-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 10px 8px;
+    color: white;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .food-btn:active {
+    border-color: var(--a);
+    background: #151515;
+  }
+  .food-name { font-size: 12px; font-weight: bold; color: var(--text); margin-bottom: 3px; }
+  .food-info { font-size: 10px; color: var(--sub); }
+  
+  .btn-clear-nut {
+    background: transparent;
+    color: var(--rd);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    padding: 8px;
+    font-size: 11px;
+    width: 100%;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .btn-clear-nut:active { background: rgba(255, 68, 68, 0.1); }
+
+  /* Onboarding */
+  #onboarding{display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center}
+  .ob-wrap{width:90%;max-width:320px;text-align:center}
+  .ob-logo{font-size:11px;color:var(--primary);letter-spacing:4px;margin-bottom:var(--sp-md)}
+  .ob-title{font-size:28px;font-weight:900;margin-bottom:var(--sp-xs)}
+  .ob-hint{font-size:13px;color:var(--sub);margin-bottom:32px}
+  .ob-user-btn{background:var(--card);border:1px solid var(--border);padding:20px;margin-bottom:var(--sp-xs);cursor:pointer;display:flex;align-items:center;gap:var(--sp-md);text-align:left}
+  .ob-user-btn:last-child{margin-bottom:0}
+  .ob-emoji{font-size:32px}
+  .ob-name{font-size:16px;font-weight:700}
+  .ob-stats{font-size:11px;color:var(--sub);margin-top:3px}
+
+  @keyframes pop{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+  @keyframes slideUp{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .tab-content.active{animation:slideUp 0.18s ease}
+
+  /* Celebrate overlay */
+  .celebrate-emoji{font-size:72px;animation:pop 0.4s ease}
+  .celebrate-title{font-size:28px;font-weight:900;color:var(--primary);margin:var(--sp-md) 0 var(--sp-xs);letter-spacing:2px}
+  .celebrate-sub{font-size:13px;color:#888;margin-bottom:32px}
+  .celebrate-btn-main{background:var(--primary);color:#000;border:none;padding:var(--sp-sm) 32px;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer}
+  .celebrate-btn-sub{margin-top:var(--sp-xs);background:none;border:1px solid #555;color:#aaa;padding:10px 24px;font-size:12px;cursor:pointer}
+
+  /* Hero collapsed bar */
+  .hero-logo{font-size:18px;font-weight:900}
+  .hero-done-mini{font-size:11px;color:var(--primary)}
+
+  /* Section header row */
+  .section-row{display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-sm)}
+  .section-row-lg{display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)}
+
+  /* Food category label */
+  .food-cat-label{font-size:11px;color:var(--primary);letter-spacing:2px;margin-bottom:var(--sp-xs);font-weight:700}
+
+  /* Food log wrap */
+  #food-log-wrap{display:none;margin-bottom:var(--sp-sm)}
+  .food-log-item{display:flex;align-items:center;gap:var(--sp-xs);padding:var(--sp-xs) var(--sp-md);border-bottom:1px solid #1a1a1a}
+  .food-log-item:last-child{border-bottom:none}
+  .food-log-name{flex:1;font-size:12px}
+  .food-log-kcal{font-size:11px;color:var(--sub)}
+  .food-log-pro{font-size:11px;color:var(--blue);min-width:32px;text-align:right}
+  .food-log-del{font-size:11px;color:#444;cursor:pointer;padding:2px 4px}
+
+  /* Weight trend label */
+  .chart-label{font-size:10px;color:var(--sub);letter-spacing:2px;margin-bottom:var(--sp-xs)}
+
+  /* Card inner label */
+  .card-label{font-size:11px;color:var(--sub);letter-spacing:2px;margin-bottom:var(--sp-xs)}
+
+  /* Timer section title */
+  .timer-title{font-size:19px;font-weight:900;letter-spacing:2px}
+
+  /* Progress diff */
+  .diff-up{font-size:11px;color:var(--danger)}
+  .diff-down{font-size:11px;color:var(--primary)}
+
+  /* Log tags */
+
+  /* Empty state */
+  .empty-state{text-align:center;color:#333;font-size:13px;padding:20px 0}
+  .empty-state-lg{text-align:center;color:#333;font-size:13px;padding:30px 0}
+
+  /* Log note cell */
+  .ex-note{padding:6px 18px;font-size:10px;color:#444;border-bottom:1px solid #1a1a1a}
+
+  /* Weight card detail */
+  .wc-label{font-size:10px;color:var(--sub);letter-spacing:2px;margin-bottom:4px}
+  .wc-val{font-size:22px;font-weight:900;color:var(--primary)}
+  .wc-unit{font-size:12px;color:var(--sub)}
+  .wc-empty{font-size:10px;color:#444}
+  .wc-fat-label{font-size:10px;color:var(--sub);margin-bottom:4px}
+  .wc-fat-val{font-size:22px;font-weight:900;color:var(--blue)}
+
+  /* Diet history mini bars */
+  .diet-hist-bar-wrap{margin-top:6px;width:60px}
+  .diet-hist-bar-row{height:3px;background:#1e1e1e;border-radius:2px;overflow:hidden;margin-bottom:2px}
+  .diet-hist-bar{height:100%;border-radius:2px}
+
+  /* Today hint */
+  .today-hint{font-size:11px;color:var(--sub);margin-bottom:var(--sp-xs)}
+
+  .log-del-btn{background:none;border:none;color:#444;font-size:11px;cursor:pointer;padding:2px 4px}
+
+  /* Inline confirm dialog */
+  .confirm-inline-wrap {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 10px;
+    background: rgba(255,68,68,0.05);
+    border: 1px solid rgba(255,68,68,0.2);
+  }
+  .confirm-inline-wrap.open { display: flex; }
+  .confirm-btn-yes {
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .confirm-btn-no {
+    background: transparent;
+    color: var(--sub);
+    border: 1px solid #333;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .text-right{text-align:right}
+
+  /* Tracker progress bars */
+  .tracker-bar-wrap{margin-top:8px;height:4px;background:#1e1e1e;border-radius:2px;overflow:hidden}
+  .tracker-bar{height:100%;width:0%;border-radius:2px;transition:width 0.4s ease}
+  .tracker-bar-primary{background:var(--primary)}
+  .tracker-bar-blue{background:var(--blue)}
+
+  /* Confirm text */
+  .confirm-text{font-size:12px;color:var(--danger)}
+
+  /* Timer center */
+  .text-center-mb{text-align:center;margin-bottom:var(--sp-md)}
+
+  /* Rest day */
+  .rest-emoji{font-size:48px;margin-bottom:var(--sp-sm)}
+  .rest-title{font-size:18px;font-weight:700;margin-bottom:var(--sp-xs)}
+  .rest-sub{font-size:13px;color:var(--sub);line-height:1.8}
+
+  /* ── Mini floating timer ─────────────────────────────── */
+  .mini-timer{position:fixed;bottom:calc(60px + var(--safe-b) + 12px);left:50%;transform:translateX(-50%);z-index:900;background:#111;border:1px solid var(--primary);width:calc(100% - 32px);max-width:360px;box-shadow:0 4px 24px rgba(0,0,0,0.6)}
+  .mini-timer.hidden{display:none}
+  .mini-timer.urgent{border-color:var(--danger)}
+  .mini-timer-inner{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+  .mini-timer-left{display:flex;flex-direction:column;gap:2px}
+  .mini-timer-label{font-size:10px;letter-spacing:2px;color:var(--sub)}
+  .mini-timer-display{font-size:28px;font-weight:900;color:var(--primary);line-height:1}
+  .mini-timer.urgent .mini-timer-display{color:var(--danger)}
+  .mini-timer-right{display:flex;gap:8px;align-items:center}
+  .mini-btn-toggle{background:var(--primary);color:#000;border:none;width:36px;height:36px;font-size:16px;cursor:pointer;font-weight:700;border-radius:2px}
+  .mini-btn-close{background:none;border:1px solid #333;color:#555;width:32px;height:32px;font-size:13px;cursor:pointer;border-radius:2px}
+  .mini-timer-bar-wrap{height:3px;background:#1e1e1e}
+  .mini-timer-bar{height:100%;background:var(--primary);transition:width 0.25s linear}
+
+  /* Workout header title */
+  .workout-title-row{display:flex;align-items:center;gap:10px}
+  .workout-day-title{font-size:17px;font-weight:900}
+
+  /* Diet history date */
+  .log-date{font-size:13px;font-weight:600}
+  .log-date-sub{font-size:10px;color:var(--sub);margin-top:3px}
+  .dot-sep{margin:0 6px;color:#333}
+
+  /* Progress list */
+  .prog-list-date{font-size:11px;color:var(--sub)}
+  .prog-list-row{display:flex;align-items:center;gap:8px}
+  .prog-list-val{font-size:13px;font-weight:600}
+  .prog-unit-sm{font-size:12px;color:var(--sub);margin-left:3px}
+
+  /* Log list */
+
+  /* Diet history no-record */
+  .no-record{padding:var(--sp-sm) var(--sp-md);font-size:12px;color:#333}
+
+  /* Diet history toggle arrow */
+  .hist-arrow{font-size:11px;color:var(--sub)}
+
+  /* card with inner padding */
+  .card-inner{padding:var(--sp-sm)}
+
+  /* diff badges */
+  .diff-pos{font-size:11px;color:var(--danger)}
+  .diff-neg{font-size:11px;color:var(--primary)}
+
+  /* prog stats grid */
+  .prog-stats-wrap{}
+  .inp-mb{margin-bottom:6px}
+
+  /* ── 週報告 ────────────────────────────────────────── */
+  .weekly-report{background:#0a0a0a;border:1px solid var(--primary);margin-bottom:var(--sp-sm);overflow:hidden}
+  .weekly-report-header{background:#0f1a00;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a2e00}
+  .weekly-report-title{font-size:11px;letter-spacing:3px;color:var(--primary);font-weight:700}
+  .weekly-report-date{font-size:10px;color:#555}
+  .weekly-report-grid{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #1a1a1a}
+  .weekly-stat{padding:14px 12px;text-align:center;border-right:1px solid #1a1a1a}
+  .weekly-stat:last-child{border-right:none}
+  .weekly-stat-val{font-size:26px;font-weight:900;color:var(--primary);line-height:1}
+  .weekly-stat-unit{font-size:10px;color:#555;margin-left:2px}
+  .weekly-stat-lab{font-size:9px;color:#555;letter-spacing:1px;margin-top:4px}
+  .weekly-days-row{display:flex;gap:4px;padding:12px 16px;border-bottom:1px solid #1a1a1a}
+  .weekly-day-dot{flex:1;height:28px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;letter-spacing:1px;border:1px solid #1e1e1e;color:#333}
+  .weekly-day-dot.trained{background:#0f1a00;border-color:var(--primary);color:var(--primary)}
+  .weekly-day-dot.today{border-color:#555;color:#555}
+  .weekly-highlights{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+  .weekly-hl-row{display:flex;justify-content:space-between;align-items:center}
+  .weekly-hl-label{font-size:11px;color:#555}
+  .weekly-hl-val{font-size:12px;font-weight:700;color:var(--text)}
+  .weekly-hl-val.good{color:var(--primary)}
+  .weekly-hl-val.warn{color:#f5a623}
+  .weekly-bar-wrap{flex:1;height:3px;background:#1e1e1e;margin:0 10px;border-radius:2px;overflow:hidden}
+  .weekly-bar{height:100%;border-radius:2px;background:var(--primary)}
+
+  /* ── 動作趨勢圖 ─────────────────────────────────────── */
+
+  /* ── Chart range ─────────────────────────────── */
+  .chart-range-btns{display:flex;gap:4px}
+  .chart-range-btn{background:#111;border:1px solid #2a2a2a;color:#555;font-size:10px;padding:3px 8px;cursor:pointer}
+  .chart-range-btn.active{background:var(--primary);color:#000;border-color:var(--primary);font-weight:700}
+
+  /* ── Target weight card ───────────────────── */
+  .target-card{background:#111;border:1px solid #2a2a2a;padding:var(--sp-sm) var(--sp-md);margin-top:var(--sp-xs);display:flex;align-items:center;gap:var(--sp-sm);flex-wrap:wrap}
+  .target-card.target-done{border-color:var(--primary);background:#0d1500;color:var(--primary);font-weight:700;font-size:13px}
+  .target-label{font-size:10px;color:var(--sub);letter-spacing:1px;flex-shrink:0}
+  .target-diff{font-size:20px;font-weight:900;flex-shrink:0}
+  .target-diff.losing{color:var(--primary)}
+  .target-diff.gaining{color:var(--blue)}
+  .target-eta{font-size:10px;color:#555;flex:1;text-align:right}
+
+  /* ── Recommendation ──────────────────────────── */
+  .rec-banner{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#0d1500;border:1px solid #2a3a00;margin-bottom:var(--sp-xs);font-size:12px}
+  .rec-banner-icon{font-size:16px;flex-shrink:0}
+  .rec-banner-text{flex:1;color:#9dc928;line-height:1.5}
+  .rec-refresh-btn{background:none;border:1px solid #3a4a00;color:#6a8a00;font-size:10px;padding:3px 8px;cursor:pointer;flex-shrink:0;white-space:nowrap}
+  .rec-refresh-btn:active{background:#1a2a00}
+  .rec-suggest{padding:6px 18px 8px;background:#0d1500;border-top:1px solid #1a2a00;display:flex;flex-direction:column;gap:2px}
+  .rec-suggest-val{font-size:12px;font-weight:700;color:#9dc928}
+
+  /* ── PR badge ───────────────────────────────────────── */
+  .pr-badge{display:inline-block;background:#1a0a00;border:1px solid #f5a623;color:#f5a623;font-size:9px;font-weight:900;padding:1px 5px;letter-spacing:1px;margin-left:6px;vertical-align:middle;animation:pop 0.4s ease}
+
+  /* ── Quick log same-as-last btn ────────────────────── */
+  .quick-log-same{background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:11px;padding:4px 10px;cursor:pointer;margin-bottom:6px;width:100%;text-align:left}
+  .quick-log-same:active{background:#2a2a2a}
+  .quick-log-suggest{font-size:10px;color:#4a6a00;padding:4px 0 6px;letter-spacing:0.5px}
+
+  /* ── Training heatmap ───────────────────────────────── */
+  .heatmap-wrap{margin-bottom:var(--sp-sm)}
+  .heatmap-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .heatmap-title{font-size:9px;color:#444;letter-spacing:2px}
+  .heatmap-legend{display:flex;align-items:center;gap:4px;font-size:9px;color:#333}
+  .heatmap-grid{display:flex;gap:2px;overflow-x:auto;padding-bottom:4px}
+  .heatmap-week{display:flex;flex-direction:column;gap:2px}
+  .heatmap-day{width:11px;height:11px;border-radius:1px;background:#1a1a1a;flex-shrink:0}
+  .heatmap-day.trained{background:var(--primary);opacity:0.9}
+  .heatmap-day.today{outline:1px solid #555}
+  .heatmap-months{display:flex;gap:2px;margin-bottom:3px;padding-left:0}
+  .heatmap-month-label{font-size:8px;color:#333}
+  .rec-suggest-reason{font-size:10px;color:#4a6a00}
+  .rec-swap-btn{background:none;border:1px solid #2a2a2a;color:#555;font-size:11px;padding:2px 7px;cursor:pointer;margin-left:4px}
+  .rec-swap-btn:active{background:#1a1a1a;color:var(--primary)}
+
+  /* ── Custom foods ────────────────────────────────────── */
+  .custom-food-wrap{margin-bottom:var(--sp-xs)}
+  .custom-food-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-bottom:6px}
+  .custom-food-btn{background:#111;border:1px solid #1e1e1e;padding:9px 10px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:4px;transition:border-color 0.15s}
+  .custom-food-btn:active{border-color:var(--primary)}
+  .custom-food-btn-left{flex:1;min-width:0}
+  .custom-food-btn-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .custom-food-btn-info{font-size:10px;color:#444;margin-top:1px}
+  .custom-food-del{font-size:14px;color:#333;cursor:pointer;padding:2px 4px;flex-shrink:0;line-height:1}
+  .custom-food-del:hover{color:var(--danger)}
+  .custom-food-add-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px}
+  .custom-food-add-row .inp{font-size:12px;padding:8px}
+  .btn-add-custom-food{grid-column:1/-1;background:none;border:1px solid #2a2a2a;color:#555;padding:8px;font-size:12px;cursor:pointer;letter-spacing:1px}
+  .btn-add-custom-food:active{border-color:var(--primary);color:var(--primary)}
+  .custom-food-empty{font-size:11px;color:#333;padding:10px 0;text-align:center}
+
+  /* ── Workout Builder ────────────────────────── */
+  .builder-add-row{display:flex;gap:var(--sp-xs);margin-top:var(--sp-xs)}
+  .btn-builder-add{background:var(--primary);color:#000;border:none;padding:0 var(--sp-sm);font-size:18px;font-weight:700;cursor:pointer;flex-shrink:0}
+  .builder-picks{display:flex;flex-direction:column;gap:4px;margin-bottom:var(--sp-xs)}
+  .builder-pick-item{display:flex;align-items:center;justify-content:space-between;padding:6px var(--sp-xs);background:#0f0f0f;border:1px solid #1e1e1e}
+  .builder-pick-name{font-size:12px;color:var(--text)}
+  .custom-day-card{margin-bottom:var(--sp-xs)}
+  .custom-day-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--sp-xs)}
+  .custom-day-title{font-size:15px;font-weight:700}
+  .custom-day-count{font-size:11px;color:var(--sub);margin-top:2px}
+  .custom-day-exlist{display:flex;flex-wrap:wrap;gap:4px}
+  .custom-day-ex{font-size:10px;padding:3px 8px;background:#1a1a1a;border:1px solid #2a2a2a;color:#888}
+
+  /* ── 1. Set tracker ──────────────────────────────────── */
+  .set-tracker{display:flex;gap:6px;padding:8px 18px 10px;flex-wrap:wrap;border-top:1px solid #1a1a1a}
+  .set-dot{width:32px;height:32px;border-radius:2px;border:1.5px solid #2a2a2a;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;font-weight:700;color:#444;transition:all 0.15s;flex-shrink:0}
+  .set-dot.done{background:var(--primary);border-color:var(--primary);color:#000}
+  .set-dot.active{border-color:var(--primary);color:var(--primary)}
+  .set-dot:active{transform:scale(0.9)}
+  .set-label{font-size:10px;color:#444;letter-spacing:1px;align-self:center;margin-left:4px}
+
+  /* ── 2. Workout summary ──────────────────────────────── */
+  .summary-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:998;display:none;flex-direction:column;overflow-y:auto;padding:var(--sp-lg) var(--sp-md)}
+  .summary-overlay.show{display:flex}
+  .summary-header{text-align:center;margin-bottom:var(--sp-lg)}
+  .summary-emoji{font-size:56px;animation:pop 0.4s ease}
+  .summary-title{font-size:22px;font-weight:900;color:var(--primary);letter-spacing:2px;margin-top:var(--sp-sm)}
+  .summary-sub{font-size:12px;color:#555;margin-top:4px}
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:var(--sp-sm)}
+  .summary-card{background:#111;border:1px solid var(--border);padding:var(--sp-sm) var(--sp-md)}
+  .summary-val{font-size:26px;font-weight:900;color:var(--primary);line-height:1}
+  .summary-lab{font-size:10px;color:#555;letter-spacing:2px;margin-top:4px}
+  .summary-ex-list{background:#111;border:1px solid var(--border);margin-bottom:var(--sp-sm)}
+  .summary-ex-row{display:flex;justify-content:space-between;align-items:center;padding:10px var(--sp-md);border-bottom:1px solid #1a1a1a}
+  .summary-ex-row:last-child{border-bottom:none}
+  .summary-ex-name{font-size:12px}
+  .summary-ex-vol{font-size:11px;color:var(--primary);font-weight:700}
+  .summary-vs{font-size:10px;color:#444;margin-top:2px}
+  .summary-btn-row{display:flex;gap:6px;margin-top:var(--sp-sm)}
+  .summary-btn-main{flex:1;background:var(--primary);color:#000;border:none;padding:var(--sp-sm);font-size:14px;font-weight:700;cursor:pointer}
+  .summary-btn-sub{flex:1;background:none;border:1px solid #333;color:#888;padding:var(--sp-sm);font-size:12px;cursor:pointer}
+
+  /* ── 3. Streak ───────────────────────────────────────── */
+  .streak-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;background:#1a1200;border:1px solid #3a2a00}
+  .streak-fire{font-size:18px;line-height:1}
+  .streak-num{font-size:20px;font-weight:900;color:#f5a623;line-height:1}
+  .streak-lab{font-size:9px;color:#7a5a00;letter-spacing:1px;margin-top:2px}
+
+  /* ── 4. Quick diet shortcuts on 今日 tab ─────────────── */
+  .quick-diet-wrap{margin-top:var(--sp-sm);margin-bottom:var(--sp-xs)}
+  .quick-diet-label{font-size:10px;color:#444;letter-spacing:2px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+  .quick-diet-label a{color:#333;font-size:10px;cursor:pointer}
+  .quick-diet-label a:hover{color:#555}
+  .quick-diet-row{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .quick-diet-btn{background:#111;border:1px solid #1e1e1e;padding:8px 4px;text-align:center;cursor:pointer;transition:border-color 0.15s}
+  .quick-diet-btn:active{border-color:var(--primary);background:#0f1a00}
+  .quick-diet-btn .qd-name{font-size:11px;font-weight:600;color:var(--text)}
+  .quick-diet-btn .qd-info{font-size:9px;color:#444;margin-top:2px}
+
+  /* ── 5. Water tracker ────────────────────────────────── */
+  .water-wrap{background:#0a0f1a;border:1px solid #1e2a3a;padding:var(--sp-sm) var(--sp-md);margin-bottom:var(--sp-xs)}
+  .water-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .water-title{font-size:11px;letter-spacing:2px;color:var(--blue)}
+  .water-num{font-size:20px;font-weight:900;color:var(--blue);line-height:1}
+  .water-unit{font-size:10px;color:#3a5a8a;margin-left:3px}
+  .water-bar-wrap{height:4px;background:#1a2a3a;border-radius:2px;overflow:hidden;margin-bottom:8px}
+  .water-bar{height:100%;background:var(--blue);border-radius:2px;transition:width 0.3s ease}
+  .water-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .water-btn{background:#111;border:1px solid #1e2a3a;color:var(--blue);padding:7px 4px;font-size:11px;font-weight:600;cursor:pointer;text-align:center}
+  .water-btn:active{background:#0a1a2a}
+  .water-reset{background:none;border:none;color:#2a4a6a;font-size:10px;cursor:pointer;padding:2px}
+</style>
+</head>
+<body>
+<!-- 第一次選擇用戶畫面 -->
+<div id="onboarding">
+  <div class="ob-wrap">
+    <div class="ob-logo">FITNESS</div>
+    <div class="ob-title">你是誰？</div>
+    <div class="ob-hint">選擇後將鎖定此裝置，無法更改</div>
+    <div onclick="selectUser('alex')" class="ob-user-btn">
+      <div class="ob-emoji">💪</div>
+      <div>
+        <div class="ob-name">Alex</div>
+        <div class="ob-stats">173CM · 154LB · 薄肌</div>
+      </div>
+    </div>
+    <div onclick="selectUser('kelly')" class="ob-user-btn">
+      <div class="ob-emoji">🌸</div>
+      <div>
+        <div class="ob-name">Kelly</div>
+        <div class="ob-stats">160CM · 126LB · 塑形</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="celebrate">
+  <div class="celebrate-emoji">🎉</div>
+  <div class="celebrate-title">今日完成！</div>
+  <div class="celebrate-sub">所有動作都打勾了，做得好 💪</div>
+  <button onclick="closeCelebrate(false)" class="celebrate-btn-main">查看今日總結</button>
+  <button onclick="closeCelebrate(true)" class="celebrate-btn-sub">去記錄今日重量 →</button>
+</div>
+
+<!-- 訓練總結 -->
+<div id="workout-summary" class="summary-overlay">
+  <div class="summary-header">
+    <div class="summary-emoji">💪</div>
+    <div class="summary-title" id="sum-title">訓練完成</div>
+    <div class="summary-sub" id="sum-sub"></div>
+  </div>
+  <div class="summary-grid" id="sum-stats"></div>
+  <div class="summary-ex-list" id="sum-ex-list"></div>
+  <div class="summary-btn-row">
+    <button class="summary-btn-main" onclick="closeSummary(false)">完成 ✓</button>
+    <button class="summary-btn-sub" onclick="closeSummary(true)">記錄體重 →</button>
+  </div>
+</div>
+<div id="app">
+<!-- 浮動組間計時器 -->
+<div id="mini-timer" class="mini-timer hidden">
+  <div class="mini-timer-inner">
+    <div class="mini-timer-left">
+      <div class="mini-timer-label">組間休息</div>
+      <div class="mini-timer-display" id="mini-display">1:30</div>
+    </div>
+    <div class="mini-timer-right">
+      <button class="mini-btn-toggle" id="mini-btn-toggle" onclick="miniTimerToggle()">⏸</button>
+      <button class="mini-btn-close" onclick="miniTimerClose()">✕</button>
+    </div>
+  </div>
+  <div class="mini-timer-bar-wrap">
+    <div class="mini-timer-bar" id="mini-bar"></div>
+  </div>
+</div>
+  <div id="hero" class="expanded">
+    <div id="hero-collapsed">
+      <div class="hero-logo">FITNESS</div>
+      <div id="hero-done-mini" class="hero-done-mini"></div>
+    </div>
+    <div id="hero-expanded-content">
+      <div id="hero-expanded">
+        <div class="hero-eyebrow">✦ 個人化計畫 · 23歲</div>
+        <div class="hero-title" id="hero-name">FITNESS</div>
+        <div class="hero-sub" id="hero-stats-sub">173CM · 154LB · 薄肌</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-cell"><div class="stat-val" id="hero-kcal">2,400</div><div class="stat-lab">每日熱量</div></div>
+        <div class="stat-cell"><div class="stat-val" id="hero-protein">130g</div><div class="stat-lab">蛋白質目標</div></div>
+        <div class="stat-cell" id="hero-streak-cell">
+          <div class="stat-val" id="hero-streak">0</div>
+          <div class="stat-lab">連續天數 🔥</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scroll">
+    <div id="tab0" class="tab-content active">
+      <div id="today-section"></div>
+
+      <!-- 快速記飲食 -->
+      <div class="quick-diet-wrap">
+        <div class="quick-diet-label">
+          <span>⚡ 快速記飲食</span>
+          <span onclick="switchTab(1)" style="cursor:pointer;color:#333">更多 →</span>
+        </div>
+        <div class="quick-diet-row">
+          <div class="quick-diet-btn" onclick="quickDietAdd(165,31,'🍗 雞胸肉')"><div class="qd-name">🍗 雞胸</div><div class="qd-info">165kcal/31g</div></div>
+          <div class="quick-diet-btn" onclick="quickDietAdd(120,24,'🥤 乳清蛋白')"><div class="qd-name">🥤 乳清</div><div class="qd-info">120kcal/24g</div></div>
+          <div class="quick-diet-btn" onclick="quickDietAdd(280,6,'🍚 白米飯')"><div class="qd-name">🍚 白飯</div><div class="qd-info">280kcal/6g</div></div>
+          <div class="quick-diet-btn" onclick="quickDietAdd(140,13,'🥚 水煮蛋')"><div class="qd-name">🥚 水煮蛋</div><div class="qd-info">140kcal/13g</div></div>
+        </div>
+      </div>
+
+      <!-- 今日喝水 -->
+      <div class="water-wrap">
+        <div class="water-header">
+          <div>
+            <div class="water-title">💧 今日喝水</div>
+            <div><span class="water-num" id="water-num">0</span><span class="water-unit">ml / 2500ml</span></div>
+          </div>
+          <button class="water-reset" onclick="resetWater()" title="歸零">↺</button>
+        </div>
+        <div class="water-bar-wrap"><div class="water-bar" id="water-bar" style="width:0%"></div></div>
+        <div class="water-btns">
+          <div class="water-btn" onclick="addWater(150)">+150ml<div style="font-size:9px;color:#3a5a8a">小口</div></div>
+          <div class="water-btn" onclick="addWater(250)">+250ml<div style="font-size:9px;color:#3a5a8a">一杯</div></div>
+          <div class="water-btn" onclick="addWater(500)">+500ml<div style="font-size:9px;color:#3a5a8a">大瓶</div></div>
+          <div class="water-btn" onclick="addWater(750)">+750ml<div style="font-size:9px;color:#3a5a8a">運動瓶</div></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="section-row-lg">
+        <span class="label">📊</span>
+        <span class="section-title">每週進度</span>
+      </div>
+      <div id="weekly-report-wrap"></div>
+      <div id="heatmap-wrap" class="heatmap-wrap card card-inner"></div>
+      <div id="prog-stats"></div>
+      <div id="chart-wrap" style="display:none">
+        <div class="wc-chart-wrap">
+          <div class="wc-chart-header">
+            <div>
+              <div class="wc-chart-title">📈 體重趨勢</div>
+              <div class="chart-range-btns" style="margin-top:6px">
+                <button class="chart-range-btn active" onclick="setChartRange(8)"  id="cr-8">8筆</button>
+                <button class="chart-range-btn"        onclick="setChartRange(20)" id="cr-20">20筆</button>
+                <button class="chart-range-btn"        onclick="setChartRange(0)"  id="cr-0">全部</button>
+              </div>
+            </div>
+            <div class="wc-chart-stats" id="wc-chart-stats"></div>
+          </div>
+          <svg id="weight-chart-svg" width="100%" style="overflow:visible"></svg>
+          <div class="wc-legend">
+            <div class="wc-legend-item"><div class="wc-legend-dot" style="background:#c8f537"></div>體重</div>
+            <div class="wc-legend-item"><div class="wc-legend-dot" style="background:#f5a623;height:1px;border-top:2px dashed #f5a623"></div>目標</div>
+            <div class="wc-legend-item"><div class="wc-legend-dot" style="background:#4a6a00;height:1px;border-top:2px dashed #4a6a00"></div>預測趨勢</div>
+          </div>
+        </div>
+      </div>
+      <div class="card card-inner">
+        <div class="card-label">新增本週紀錄</div>
+        <div class="inp-grid">
+          <input class="inp" id="inp-w" placeholder="體重 (lb)" type="number" step="0.1" inputmode="decimal">
+          <input class="inp" id="inp-f" placeholder="體脂 % (選填)" type="number" step="0.1" inputmode="decimal">
+        </div>
+        <input class="inp inp-mb" id="inp-target" placeholder="目標體重 (lb，選填)" type="number" step="0.1" inputmode="decimal">
+        <button class="btn-save" onclick="saveProgress()">記錄 ＋</button>
+      </div>
+      <div id="prog-list"></div>
+      <div id="orm-wrap"></div>
+      <div class="hint-box">💡 目標：每月減 2–4 lb。體重上升不代表失敗，可能是肌肉增加</div>
+    </div>
+
+    <div id="tab1" class="tab-content">
+      <div class="section-row">
+        <span class="label">⭐</span><span class="section-title">我的常駐食物</span>
+      </div>
+      <div class="custom-food-wrap">
+        <div class="custom-food-grid" id="custom-food-grid"></div>
+        <div class="custom-food-add-row">
+          <input class="inp" id="cf-name" placeholder="名稱" maxlength="12">
+          <input class="inp" id="cf-cal" placeholder="熱量(kcal)" type="number" inputmode="numeric">
+          <input class="inp" id="cf-pro" placeholder="蛋白質(g)" type="number" inputmode="numeric">
+          <button class="btn-add-custom-food" onclick="addCustomFood()">＋ 加入常駐</button>
+        </div>
+      </div>
+
+      <div class="section-row">
+        <span class="label">📊</span><span class="section-title">本週飲食總結</span>
+      </div>
+      <div id="week-diet-summary"></div>
+
+      <div class="section-row">
+        <span class="label">🔥</span><span class="section-title">今日累積攝取</span>
+      </div>
+      <div class="tracker-dashboard">
+        <div class="tracker-box">
+          <div class="t-title">今日熱量</div>
+          <div class="t-num" id="today-calories-num">0</div>
+          <div class="t-unit" id="diet-kcal-target">kcal / 2,400</div>
+          <div class="tracker-bar-wrap">
+            <div id="kcal-bar" class="tracker-bar tracker-bar-primary"></div>
+          </div>
+        </div>
+        <div class="tracker-box">
+          <div class="t-title">今日蛋白質</div>
+          <div class="t-num" id="today-protein-num">0</div>
+          <div class="t-unit" id="diet-protein-target">g / 130g</div>
+          <div class="tracker-bar-wrap">
+            <div id="protein-bar" class="tracker-bar tracker-bar-blue"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="diet-goal-toast" class="diet-goal-toast hidden"></div>
+      <div class="food-cat-label">🥩 優質蛋白質（點擊加入）</div>
+      <div class="food-menu">
+        <button class="food-btn" onclick="dietAdd(140,13,'🥚 水煮蛋',this)"><div class="food-name">🥚 水煮蛋 (2顆)</div><div class="food-info">140 kcal / 13g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(165,31,'🍗 即食雞胸肉',this)"><div class="food-name">🍗 即食雞胸肉 (1片)</div><div class="food-info">165 kcal / 31g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(250,20,'🥩 滷牛肉',this)"><div class="food-name">🥩 滷牛肉 (100g)</div><div class="food-info">250 kcal / 20g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(110,22,'🐟 鯛魚排',this)"><div class="food-name">🐟 鯛魚排 (100g)</div><div class="food-info">110 kcal / 22g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(80,14,'🥢 傳統板豆腐',this)"><div class="food-name">🥢 傳統板豆腐 (半盒)</div><div class="food-info">80 kcal / 14g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(95,12,'🌱 鹽水毛豆',this)"><div class="food-name">🌱 鹽水毛豆 (100g)</div><div class="food-info">95 kcal / 12g 蛋白</div></button>
+      </div>
+
+      <div class="food-cat-label">🍚 碳水主食</div>
+      <div class="food-menu">
+        <button class="food-btn" onclick="dietAdd(280,6,'🍚 白米飯',this)"><div class="food-name">🍚 白米飯 (1碗)</div><div class="food-info">280 kcal / 6g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(140,4,'🍠 地瓜',this)"><div class="food-name">🍠 地瓜 (100g)</div><div class="food-info">140 kcal / 4g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(150,5,'🥣 燕麥片',this)"><div class="food-name">🥣 燕麥片 (40g)</div><div class="food-info">150 kcal / 5g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(210,7,'🍞 鮮奶吐司',this)"><div class="food-name">🍞 鮮奶吐司 (2片)</div><div class="food-info">210 kcal / 7g 蛋白</div></button>
+      </div>
+
+      <div class="food-cat-label">🏪 超商與外食</div>
+      <div class="food-menu">
+        <button class="food-btn" onclick="dietAdd(180,4,'🍙 超商御飯糰',this)"><div class="food-name">🍙 超商御飯糰 (1個)</div><div class="food-info">180 kcal / 4g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(550,24,'🍱 健身便當',this)"><div class="food-name">🍱 健身便當 (1個)</div><div class="food-info">550 kcal / 24g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(350,15,'🍜 泡麵',this)"><div class="food-name">🍜 泡麵</div><div class="food-info">350 kcal / 15g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(120,6,'🥗 生菜沙拉',this)"><div class="food-name">🥗 生菜沙拉 (無醬)</div><div class="food-info">120 kcal / 6g 蛋白</div></button>
+      </div>
+
+      <div class="food-cat-label">🥤 飲品與補劑</div>
+      <div class="food-menu">
+        <button class="food-btn" onclick="dietAdd(120,24,'🥤 乳清蛋白',this)"><div class="food-name">🥤 乳清蛋白 (1份)</div><div class="food-info">120 kcal / 24g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(150,13,'🥛 無糖豆漿',this)"><div class="food-name">🥛 無糖豆漿 (400ml)</div><div class="food-info">150 kcal / 13g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(140,8,'🥛 全脂鮮乳',this)"><div class="food-name">🥛 全脂鮮乳 (290ml)</div><div class="food-info">140 kcal / 8g 蛋白</div></button>
+        <button class="food-btn" onclick="dietAdd(90,10,'🍦 希臘優格',this)"><div class="food-name">🍦 希臘優格 (100g)</div><div class="food-info">90 kcal / 10g 蛋白</div></button>
+      </div>
+
+      <div id="food-log-wrap">
+        <div class="food-cat-label">📋 今日已記錄</div>
+        <div class="card" id="food-log-list"></div>
+      </div>
+
+      <div class="card card-inner" style="margin-top:var(--sp-sm)">
+        <div class="card-label">✍️ 手動新增其他飲食紀錄</div>
+        <div class="inp-grid">
+          <input class="inp" id="inp-cal" placeholder="熱量 (kcal)" type="number" inputmode="numeric">
+          <input class="inp" id="inp-pro" placeholder="蛋白質 (g)" type="number" inputmode="numeric">
+        </div>
+        <button class="btn-save" onclick="saveCustomDiet()">加入自訂統計 ＋</button>
+        <button class="btn-clear-nut" onclick="toggleConfirmInline(true)">歸零今日累積攝取 ↺</button>
+        <div class="confirm-inline-wrap" id="diet-confirm-box">
+          <span class="confirm-text">確定清空今日飲食？無法復原</span>
+          <button class="confirm-btn-yes" onclick="resetDietTracker()">確定</button>
+          <button class="confirm-btn-no" onclick="toggleConfirmInline(false)">取消</button>
+        </div>
+      </div>
+
+      <div class="section-row" style="margin-top:20px">
+        <span class="label">📅</span><span class="section-title">飲食歷史</span>
+      </div>
+      <div id="diet-history-list"></div>
+    </div>
+
+    <div id="tab2" class="tab-content">
+      <div id="timer-wrap">
+        <div class="section-row-lg">
+          <span class="label">⏱</span><span class="timer-title">休息計時器</span>
+        </div>
+        <div class="text-center-mb">
+          <div id="timer-ring">
+            <svg viewBox="0 0 160 160" id="ring-svg">
+              <circle class="ring-bg" cx="80" cy="80" r="68" fill="none" stroke="#1e1e1e" stroke-width="8"/>
+              <circle id="ring-fg" cx="80" cy="80" r="68" fill="none" stroke="var(--a)" stroke-width="8" stroke-linecap="round"
+                stroke-dasharray="427.26" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
+            </svg>
+            <div id="timer-inner">
+              <div id="timer-display">1:30</div>
+              <div id="timer-label">準備</div>
+            </div>
+          </div>
+        </div>
+        <div class="preset-grid">
+          <button class="preset-btn" onclick="setPreset(60)">1分</button>
+          <button class="preset-btn active" onclick="setPreset(90)">1.5分</button>
+          <button class="preset-btn" onclick="setPreset(120)">2分</button>
+          <button class="preset-btn" onclick="setPreset(180)">3分</button>
+        </div>
+        <div class="timer-btns">
+          <button class="btn-start" id="btn-start" onclick="toggleTimer()">▶ 開始</button>
+          <button class="btn-reset" onclick="resetTimer()">↺ 重置</button>
+        </div>
+        <div class="hint-box">💡 建議休息 60–90 秒，維持心率和燃脂效果</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="tabbar">
+    <button class="tab-btn active" onclick="switchTab(0)">今日</button>
+    <button class="tab-btn" onclick="switchTab(1)">飲食</button>
+    <button class="tab-btn" onclick="switchTab(2)">計時</button>
+  </div></div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────
+// 顏色統一從 CSS variables 讀取，不再各自維護
+const _css = getComputedStyle(document.documentElement);
+const A  = "#c8f537";   // --primary
+const A2 = "#537fc8";   // --blue
+const RD = "#ff4444";   // --danger
+// 未來改顏色只需改 CSS :root，JS 自動跟著變：
+// const A  = _css.getPropertyValue('--primary').trim();
+// const A2 = _css.getPropertyValue('--blue').trim();
+// const RD = _css.getPropertyValue('--danger').trim();
+
+const USERS = {
+  alex: {
+    name: "Alex", emoji: "💪", stats: "173CM · 154LB · 薄肌",
+    kcalTarget: 2400, proteinTarget: 130,
+    trainingDays: { 1:0, 3:1, 5:2, 6:3 },
+    days: [
+      { id:"D1", title:"胸 + 三頭", sub:"CHEST · TRICEPS", note:"複合動作先，孤立收尾，三頭放最後", ex:[
+        {zh:"史密斯機胸推",en:"Smith Machine Bench Press",sets:"4×10–12",cue:"肩胛骨夾緊下壓，胸部主動往上頂。下降控制 2 秒，不要彈起。"},
+        {zh:"啞鈴上斜推舉",en:"Dumbbell Incline Press",sets:"3×12",cue:"椅背 30–45 度，感受上胸拉伸。不要讓手肘外飛過寬。"},
+        {zh:"蝴蝶機夾胸",en:"Pec Deck Fly",sets:"3×15→10",cue:"夾合時想像胸肌在中間相擠。遞減組做完立刻減重繼續不休息。"},
+        {zh:"繩索下斜夾胸",en:"Cable Low Fly",sets:"3×15",cue:"滑輪調低位，從下方往斜上方畫弧，感受下胸收縮。"},
+        {zh:"繩索三頭下壓",en:"Cable Tricep Pushdown",sets:"3×15",cue:"手肘夾緊固定，只動前臂往下壓，頂端完全伸直。"},
+        {zh:"雙槓下推",en:"Dip",sets:"3×10",cue:"身體微前傾刺激胸，下降到手肘 90 度即可。"},
+        {zh:"啞鈴錘式彎舉",en:"Hammer Curl",sets:"3×12",cue:"虎口朝上，手肘夾緊身側。鍛鍊肱肌和前臂，讓手臂更立體。"},
+      ]},
+      { id:"D2", title:"背 + 二頭", sub:"BACK · BICEPS", note:"引體向上放第一，划船練厚度，RDL 練後側鏈，二頭孤立收尾", ex:[
+        {zh:"反握引體向上",en:"Chin-up",sets:"4×8",cue:"反握掌心朝自己，靠胸口去找槓，感受背部而非手臂發力。"},
+        {zh:"高位滑輪下拉",en:"Lat Pulldown",sets:"4×12",cue:"寬握，手肘往後下方帶，想像把槓往胸口拉。背闊肌主導，不是手臂。"},
+        {zh:"器械划船",en:"Machine Row",sets:"3×12",cue:"胸口貼靠墊，手肘往後拉到底停 1 秒，不要借力搖晃。"},
+        {zh:"繩索直臂下壓",en:"Cable Straight Arm Pulldown",sets:"3×15",cue:"手臂伸直，用背闊肌把繩索從頭頂往髖部壓下。感受背闊肌下段收縮。"},
+        {zh:"羅馬尼亞硬舉",en:"Romanian Deadlift",sets:"3×10",cue:"髖部往後推讓槓貼大腿下滑，感受後腿和臀部拉伸，背部全程打直。放在背日末段，後側鏈一起收。"},
+        {zh:"啞鈴二頭彎舉",en:"Dumbbell Bicep Curl",sets:"3×12",cue:"手肘固定身側，頂端小拇指朝外，不要搖晃借力。"},
+        {zh:"繩索二頭彎舉",en:"Cable Bicep Curl",sets:"3×15",cue:"低位滑輪，全程保持張力不像啞鈴頂端會卸力。完全伸展到完全收縮。"},
+      ]},
+      { id:"D3", title:"肩 + 腹", sub:"SHOULDER · CORE", note:"寬肩重點日——側平舉量最多，三個三角肌頭都練到，腹部收尾", ex:[
+        {zh:"啞鈴肩推",en:"Dumbbell Shoulder Press",sets:"4×12",cue:"啞鈴在耳旁起始往正上方推，核心收緊避免腰部後仰。這天最重要的複合動作。"},
+        {zh:"繩索側平舉",en:"Cable Lateral Raise",sets:"5×15",cue:"小指朝上倒水的感覺，手臂到肩膀高度即可，不要用斜方肌代償。這個動作決定肩寬。"},
+        {zh:"啞鈴側平舉",en:"Dumbbell Lateral Raise",sets:"3×15",cue:"做完繩索側平舉再做啞鈴版，中束高頻刺激。可做遞減組：做完立刻換輕一點繼續。"},
+        {zh:"反向蝴蝶機",en:"Reverse Pec Deck",sets:"4×15",cue:"面向機器坐，手臂往後展開，全程肩胛骨夾緊。後三角肌是倒三角視覺的關鍵。"},
+        {zh:"繩索面拉",en:"Cable Face Pull",sets:"3×15",cue:"繩索調眼睛高度，雙手往臉部兩側拉，手肘高於肩膀。同時練後三角和肩膀穩定度。"},
+        {zh:"繩索捲腹",en:"Cable Crunch",sets:"4×15",cue:"跪姿用腹肌捲下，不是用手拉頭，是腹部主動收縮。腹肌線條靠體脂，但這個動作讓腹肌更立體。"},
+        {zh:"懸吊抬腿",en:"Hanging Leg Raise",sets:"3×12",cue:"雙手懸掛槓上，腹部收緊把腿抬到與地面平行，緩慢下放不要甩動。下腹線條關鍵。"},
+        {zh:"木材劈砍",en:"Cable Woodchop",sets:"3×12",cue:"繩索從高往低斜向拉，旋轉軀幹感受腹斜肌，雙腳固定不動。練腹斜肌讓腰部更窄。"},
+      ]},
+      { id:"D4", title:"迷你腿日", sub:"LEG · MAINTENANCE", note:"維持代謝和肌肉平衡，30 分鐘以內完成，不需要衝重量", ex:[
+        {zh:"深蹲機",en:"Hack Squat Machine",sets:"3×10",cue:"腳掌寬度與肩同寬，下蹲到大腿平行地面，膝蓋對齊腳趾，背部貼緊靠墊。"},
+        {zh:"坐姿腿後彎",en:"Seated Leg Curl",sets:"3×12",cue:"大腿貼緊坐墊，把腳跟往臀部捲到底，頂端停 1 秒感受腿後肌收縮。"},
+        {zh:"坐姿提踵",en:"Seated Calf Raise",sets:"3×20",cue:"腳尖踮到最高點停 1 秒，再緩慢下放到底部充分拉伸，全程控制速度。"},
+      ]},
+    ],
+  },
+  kelly: {
+    name: "Kelly", emoji: "🌸", stats: "160CM · 126LB · 塑形",
+    kcalTarget: 1650, proteinTarget: 90,
+    trainingDays: { 1:0, 3:1, 5:2 },
+    days: [
+      { id:"A", title:"全身訓練 A", sub:"FULL BODY A · OVERALL", note:"臀腿優先，全身均勻刺激", ex:[
+        {zh:"腿部推蹬機",en:"Leg Press",sets:"3×15",cue:"腳掌平放踏板中段，下降到膝蓋 90 度。膝蓋對齊腳趾方向，不要往內夾。"},
+        {zh:"坐姿腿後彎",en:"Leg Curl",sets:"3×15",cue:"大腿貼緊坐墊，把腳跟往臀部捲，感受後腿收縮。不要借用腰部力量。"},
+        {zh:"器械划船",en:"Machine Row",sets:"3×15",cue:"胸口貼靠墊，手肘往後拉到底停 1 秒。想像把手肘夾向身體中線。"},
+        {zh:"胸推機",en:"Chest Press Machine",sets:"3×15",cue:"背部貼緊靠墊，手肘不要完全鎖死。感受胸部發力而不是手臂推。"},
+        {zh:"繩索側平舉",en:"Cable Lateral Raise",sets:"3×15",cue:"小指朝上倒水的感覺，手臂抬到肩膀高度即可，不要聳肩。"},
+        {zh:"繩索捲腹",en:"Cable Crunch",sets:"3×15",cue:"跪姿，用腹肌力量把上身往下捲。不是用手拉頭，是腹部主動收縮。"},
+      ]},
+      { id:"B", title:"全身訓練 B", sub:"GLUTE FOCUS B", note:"臀部重點日，換角度全身刺激", ex:[
+        {zh:"臀推機",en:"Hip Thrust Machine",sets:"4×15",cue:"上背靠墊，腳掌踩穩，用臀部力量把髖部推到最高點並夾緊，停 1 秒。"},
+        {zh:"腿部伸展機",en:"Leg Extension",sets:"3×15",cue:"背部靠緊椅背，把小腿往前伸直感受股四頭肌收縮，不要甩腿借力。"},
+        {zh:"高位滑輪下拉",en:"Lat Pulldown",sets:"3×15",cue:"寬握，下拉時把手肘往後下方帶，想像把槓往胸口拉，感受背闊肌收緊。"},
+        {zh:"蝴蝶機夾胸",en:"Pec Deck Fly",sets:"3×15",cue:"手肘微彎保持固定弧度，夾合時想像兩邊胸肌在中間相擠，感受拉伸。"},
+        {zh:"繩索面拉",en:"Cable Face Pull",sets:"3×15",cue:"繩索調眼睛高度，雙手往臉部兩側拉，手肘高於肩膀。保護肩袖必做。"},
+        {zh:"繩索臀部後踢",en:"Cable Glute Kickback",sets:"3×15",cue:"腳踝扣繩索，身體微前傾扶機器，用臀部力量把腿往後上方踢，不要借腰。"},
+      ]},
+      { id:"C", title:"臀腿強化", sub:"GLUTE · LEG FOCUS", note:"Kelly 的臀腿重點日，感受肌肉收縮比重量更重要", ex:[
+        {zh:"槓鈴臀推",en:"Barbell Hip Thrust",sets:"4×12",cue:"上背靠凳，槓放髖骨上方墊護具，腳掌踩穩，推到頂點夾緊臀部停 2 秒。"},
+        {zh:"深蹲機",en:"Hack Squat Machine",sets:"3×12",cue:"腳掌稍寬，感受臀部和腿前側同時發力。下蹲慢 3 秒，上推快 1 秒。"},
+        {zh:"坐姿髖外展",en:"Seated Hip Abduction",sets:"3×20",cue:"緩慢往外打開到最大幅度，在頂端停 1 秒感受臀中肌收縮，不要借用腰部。"},
+        {zh:"反向蹬腿",en:"Reverse Hack Squat",sets:"3×12",cue:"面向機器，臀部往後推主導，感受臀腿後側鏈發力，比正向蹬腿更刺激臀部。"},
+        {zh:"羅馬尼亞硬舉",en:"Romanian Deadlift",sets:"3×12",cue:"髖部往後推讓槓貼大腿下滑，感受後腿拉伸，背部全程打直。"},
+        {zh:"站姿提踵",en:"Standing Calf Raise",sets:"3×20",cue:"腳尖踮到最高點停 1 秒，緩慢下放到底充分拉伸。小腿也要練才比例好。"},
+        {zh:"彈力帶側走",en:"Resistance Band Side Walk",sets:"3×20步",cue:"彈力帶套膝上，微蹲姿側向跨步，全程保持臀部收緊不要放鬆。"},
+      ]},
+    ],
+  },
+};
+
+// ── 動作資料庫 ───────────────────────────────────────────────────────
+// compound:true = 複合動作（必排第一）
+// focus = 此動作所屬的訓練日主題（可多個），用來智慧選 6 個
+const EXERCISE_BANK = [
+  // ── 胸 ──────────────────────────────────────────────────────────────
+  {zh:"史密斯機胸推",       en:"Smith Machine Bench Press",        sets:"4×10–12",cue:"肩胛骨夾緊下壓，胸部主動往上頂。下降控制 2 秒，不要彈起。",                      muscle:"胸",compound:true, focus:["胸","全身"]},
+  {zh:"上斜槓鈴臥推",       en:"Barbell Incline Bench Press",      sets:"4×8–10", cue:"椅背 30–45 度，槓下降到上胸，手肘角度約 75 度，不要完全外展。",                   muscle:"胸",compound:true, focus:["胸","全身"]},
+  {zh:"平板槓鈴臥推",       en:"Barbell Flat Bench Press",         sets:"4×8–10", cue:"握距略寬於肩，槓下降到乳頭位置，肩胛骨下沉，核心繃緊不要讓腰部過度離地。",          muscle:"胸",compound:true, focus:["胸","全身"]},
+  {zh:"下斜槓鈴臥推",       en:"Barbell Decline Bench Press",      sets:"3×10",   cue:"椅背下斜約 20 度，專注下胸發力，槓下降到下胸位置，感受下胸收縮。",                 muscle:"胸",compound:true, focus:["胸"]},
+  {zh:"啞鈴上斜推舉",       en:"Dumbbell Incline Press",           sets:"3×12",   cue:"椅背 30–45 度，感受上胸拉伸。不要讓手肘外飛過寬。",                            muscle:"胸",compound:true, focus:["胸","全身"]},
+  {zh:"啞鈴平板推舉",       en:"Dumbbell Flat Press",              sets:"3×12",   cue:"啞鈴在胸旁，推到頂點時兩端輕碰，在底部充分拉伸感受胸大肌。",                      muscle:"胸",compound:true, focus:["胸","全身"]},
+  {zh:"胸推機",             en:"Chest Press Machine",              sets:"3×15",   cue:"背部貼緊靠墊，手肘不要完全鎖死。感受胸部發力而不是手臂推。",                      muscle:"胸",compound:true, focus:["胸","全身"]},
+  {zh:"啞鈴飛鳥",           en:"Dumbbell Fly",                     sets:"3×15",   cue:"手肘微彎保持固定弧度，往兩側張開感受胸大肌拉伸，收回時想像抱著一棵大樹。",          muscle:"胸",compound:false,focus:["胸"]},
+  {zh:"上斜啞鈴飛鳥",       en:"Incline Dumbbell Fly",             sets:"3×15",   cue:"椅背 30 度，底部充分拉伸上胸，收回時在頂點停 1 秒感受上胸收縮。",                muscle:"胸",compound:false,focus:["胸"]},
+  {zh:"蝴蝶機夾胸",         en:"Pec Deck Fly",                     sets:"3×15",   cue:"夾合時想像胸肌在中間相擠。遞減組做完立刻減重繼續不休息。",                       muscle:"胸",compound:false,focus:["胸"]},
+  {zh:"繩索下斜夾胸",       en:"Cable Low Fly",                    sets:"3×15",   cue:"滑輪調低位，從下方往斜上方畫弧，感受下胸收縮。",                               muscle:"胸",compound:false,focus:["胸"]},
+  {zh:"低位繩索夾胸",       en:"Low Cable Crossover",              sets:"3×15",   cue:"雙手從下往上夾，感受上胸和中縫收縮，在頂點停 1 秒。",                           muscle:"胸",compound:false,focus:["胸"]},
+  {zh:"高位繩索夾胸",       en:"High Cable Crossover",             sets:"3×15",   cue:"滑輪調高位，雙手從上往下夾，感受下胸和中縫收縮。",                              muscle:"胸",compound:false,focus:["胸"]},
+  {zh:"雙槓下推",           en:"Dip",                              sets:"3×10",   cue:"身體微前傾刺激胸，下降到手肘 90 度即可。",                                    muscle:"胸",compound:true, focus:["胸","三頭"]},
+  {zh:"史密斯機上斜推",     en:"Smith Machine Incline Press",      sets:"3×12",   cue:"椅背 30 度，史密斯機軌道固定路徑，專注感受上胸發力，肩胛骨保持下沉。",             muscle:"胸",compound:true, focus:["胸"]},
+  // ── 背 ──────────────────────────────────────────────────────────────
+  {zh:"反握引體向上",       en:"Chin-up",                          sets:"3×8",    cue:"反握掌心朝自己，靠胸口去找槓，感受背部而非手臂發力。",                           muscle:"背",compound:true, focus:["背","全身"]},
+  {zh:"正握引體向上",       en:"Pull-up",                          sets:"3×8",    cue:"寬握掌心朝外，把胸口拉向槓，手肘往下帶感受背闊肌而非手臂。",                      muscle:"背",compound:true, focus:["背","全身"]},
+  {zh:"高位滑輪下拉",       en:"Lat Pulldown",                     sets:"4×12",   cue:"寬握，手肘往後下方帶，想像把槓往胸口拉。",                                    muscle:"背",compound:true, focus:["背","全身"]},
+  {zh:"對握高位下拉",       en:"Neutral Grip Lat Pulldown",        sets:"3×12",   cue:"虎口相對握把手，感受背闊肌中段收縮，肩胛骨主動下壓。",                           muscle:"背",compound:true, focus:["背"]},
+  {zh:"器械划船",           en:"Machine Row",                      sets:"3×12",   cue:"胸口貼靠墊，手肘往後拉到底停 1 秒，不要借力搖晃。",                            muscle:"背",compound:true, focus:["背","全身"]},
+  {zh:"單臂啞鈴划船",       en:"Single-arm Dumbbell Row",          sets:"3×12",   cue:"一手扶凳，身體平行地面，把啞鈴往髖部方向拉，感受背闊肌而非二頭。",                 muscle:"背",compound:true, focus:["背","全身"]},
+  {zh:"槓鈴彎腰划船",       en:"Barbell Bent-over Row",            sets:"4×8–10", cue:"身體前傾約 45 度，把槓往腹部方向拉，手肘貼身，感受整個背部收縮。",               muscle:"背",compound:true, focus:["背"]},
+  {zh:"反握槓鈴划船",       en:"Underhand Barbell Row",            sets:"3×10",   cue:"反握讓二頭參與更多，把槓拉向腹部，感受下背和菱形肌。",                          muscle:"背",compound:true, focus:["背"]},
+  {zh:"T 槓划船",           en:"T-bar Row",                        sets:"3×10",   cue:"胸口貼靠墊，把槓往胸部方向拉到底，感受中背和菱形肌收縮。",                      muscle:"背",compound:true, focus:["背"]},
+  {zh:"坐姿繩索划船",       en:"Seated Cable Row",                 sets:"3×12",   cue:"背部打直，把繩索拉向腹部，手肘貼身往後帶，感受中背收縮後停 1 秒。",              muscle:"背",compound:true, focus:["背","全身"]},
+  {zh:"窄握高位下拉",       en:"Close Grip Lat Pulldown",          sets:"3×12",   cue:"手掌相對窄握，把手肘往腰部方向下壓，感受背闊肌下段收縮。",                      muscle:"背",compound:false,focus:["背"]},
+  {zh:"繩索直臂下壓",       en:"Cable Straight Arm Pulldown",      sets:"3×15",   cue:"手臂伸直，用背闊肌把繩索從頭頂往髖部壓下。",                                  muscle:"背",compound:false,focus:["背"]},
+  {zh:"啞鈴俯身划船",       en:"Dumbbell Bent-over Row",           sets:"3×12",   cue:"兩手持啞鈴，身體前傾，同時往兩側拉，感受整個背部收縮。",                         muscle:"背",compound:true, focus:["背","全身"]},
+  {zh:"上斜啞鈴划船",       en:"Incline Dumbbell Row",             sets:"3×12",   cue:"俯臥在上斜凳上，雙手持啞鈴往後上方拉，感受整個背部收縮，肩胛骨夾緊。",            muscle:"背",compound:true, focus:["背"]},
+  {zh:"繩索寬距划船",       en:"Wide Grip Cable Row",              sets:"3×12",   cue:"寬握把，手肘外展帶動，感受菱形肌和中背收縮。",                                 muscle:"背",compound:false,focus:["背"]},
+  {zh:"引體向上輔助機",     en:"Assisted Pull-up Machine",         sets:"3×10",   cue:"設定輔助重量，練習完整動作範圍，逐步減少輔助重量。",                             muscle:"背",compound:true, focus:["背","全身"]},
+  {zh:"硬舉",               en:"Deadlift",                         sets:"4×5",    cue:"腳踝正下方握槓，背部打直鎖緊，髖關節主導推地，槓貼身上拉到站直。核心全程收緊。",  muscle:"背",compound:true, focus:["背","腿","全身"]},
+  // ── 肩 ──────────────────────────────────────────────────────────────
+  {zh:"啞鈴肩推",           en:"Dumbbell Shoulder Press",          sets:"4×12",   cue:"啞鈴在耳旁起始往正上方推，核心收緊避免腰部後仰。",                             muscle:"肩",compound:true, focus:["肩","全身"]},
+  {zh:"槓鈴過頭推",         en:"Barbell Overhead Press",           sets:"4×8",    cue:"站姿或坐姿，槓從上胸推到頭頂正上方，核心收緊，不要過度後仰。",                   muscle:"肩",compound:true, focus:["肩"]},
+  {zh:"史密斯機肩推",       en:"Smith Machine Shoulder Press",     sets:"4×12",   cue:"軌道固定幫助穩定，從耳旁推到頭頂正上方，核心收緊，感受三角肌前束和中束。",        muscle:"肩",compound:true, focus:["肩"]},
+  {zh:"Arnold推舉",         en:"Arnold Press",                     sets:"3×12",   cue:"掌心朝自己起始，推舉過程中手腕自然外旋到頂部掌心朝前，同時刺激三個三角肌頭。",    muscle:"肩",compound:true, focus:["肩"]},
+  {zh:"繩索側平舉",         en:"Cable Lateral Raise",              sets:"4×15",   cue:"小指朝上倒水的感覺，手臂到肩膀高度即可，不要用斜方肌代償。",                    muscle:"肩",compound:false,focus:["肩","全身"]},
+  {zh:"啞鈴側平舉",         en:"Dumbbell Lateral Raise",           sets:"4×15",   cue:"小指朝上，手臂抬到肩膀高度，不要借用身體搖晃。可做遞減組。",                    muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"雙邊繩索側平舉",     en:"Cable Lateral Raise Both Sides",   sets:"3×15",   cue:"交叉繩索從對側拉起，全程保持張力，肩膀高度停頓 1 秒。",                        muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"反向蝴蝶機",         en:"Reverse Pec Deck",                 sets:"3×15",   cue:"面向機器坐，手臂往後展開，全程肩胛骨夾緊。",                                  muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"啞鈴前平舉",         en:"Dumbbell Front Raise",             sets:"3×12",   cue:"雙手持啞鈴，手臂伸直往前抬到肩膀高度，不要借用身體擺動。",                      muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"槓鈴前平舉",         en:"Barbell Front Raise",              sets:"3×12",   cue:"雙手握槓鈴往正前方抬高至肩膀水平，不要借腰，緩慢下放控制離心。",                 muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"俯身啞鈴側平舉",     en:"Bent-over Dumbbell Raise",         sets:"3×15",   cue:"身體前傾，手臂往兩側抬起感受後三角肌，不要用斜方肌代償。",                      muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"繩索後三角拉",       en:"Cable Rear Delt Pull",             sets:"3×15",   cue:"滑輪調到眼睛高度，單手從對側拉向耳旁，感受後三角肌收縮。",                      muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"繩索面拉",           en:"Cable Face Pull",                  sets:"3×15",   cue:"繩索調眼睛高度，雙手往臉部兩側拉，手肘高於肩膀。",                            muscle:"肩",compound:false,focus:["肩","背","全身"]},
+  {zh:"啞鈴聳肩",           en:"Dumbbell Shrug",                   sets:"3×15",   cue:"雙手持啞鈴，肩膀往耳朵方向聳到最高點停 1 秒，刺激斜方肌上束。",                 muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"槓鈴聳肩",           en:"Barbell Shrug",                    sets:"3×15",   cue:"握槓鈴，肩膀正上方聳起停 1 秒，不要旋轉肩膀，純粹垂直聳。",                   muscle:"肩",compound:false,focus:["肩"]},
+  {zh:"繩索肩推",           en:"Cable Shoulder Press",             sets:"3×12",   cue:"坐姿，低位滑輪從耳旁推到頭頂，全程保持張力比啞鈴更均勻。",                      muscle:"肩",compound:true, focus:["肩"]},
+  // ── 二頭 ─────────────────────────────────────────────────────────────
+  {zh:"啞鈴二頭彎舉",       en:"Dumbbell Bicep Curl",              sets:"3×12",   cue:"手肘固定身側，頂端小拇指朝外，不要搖晃借力。",                                muscle:"二頭",compound:false,focus:["背","二頭"]},
+  {zh:"槓鈴二頭彎舉",       en:"Barbell Bicep Curl",               sets:"3×10",   cue:"正握槓鈴，手肘固定不動，把槓舉到肩膀高度，緩慢下放感受離心。",                  muscle:"二頭",compound:false,focus:["二頭"]},
+  {zh:"EZ 槓彎舉",          en:"EZ Bar Curl",                      sets:"3×12",   cue:"EZ 槓設計減少手腕壓力，手肘固定，完整彎舉範圍，頂端停 1 秒。",                muscle:"二頭",compound:false,focus:["二頭"]},
+  {zh:"繩索二頭彎舉",       en:"Cable Bicep Curl",                 sets:"3×15",   cue:"低位滑輪，全程保持張力不像啞鈴頂端會卸力。完全伸展到完全收縮。",                muscle:"二頭",compound:false,focus:["背","二頭"]},
+  {zh:"繩索高位彎舉",       en:"High Cable Curl",                  sets:"3×15",   cue:"滑輪調到頭頂高度，雙手往後拉向耳朵，感受二頭肌充分收縮和拉伸。",               muscle:"二頭",compound:false,focus:["二頭"]},
+  {zh:"集中彎舉",           en:"Concentration Curl",               sets:"3×12",   cue:"手肘抵住大腿內側固定，緩慢舉起再緩慢放下，感受二頭頂峰收縮。",                 muscle:"二頭",compound:false,focus:["二頭"]},
+  {zh:"牧師凳彎舉",         en:"Preacher Curl",                    sets:"3×12",   cue:"上臂固定在凳上，完全伸展到完全收縮，頂端停 1 秒。",                          muscle:"二頭",compound:false,focus:["二頭"]},
+  {zh:"蜘蛛彎舉",           en:"Spider Curl",                      sets:"3×12",   cue:"俯臥上斜凳上，雙臂自然下垂，把啞鈴往上彎，重力讓頂部張力更大。",               muscle:"二頭",compound:false,focus:["二頭"]},
+  {zh:"啞鈴錘式彎舉",       en:"Hammer Curl",                      sets:"3×12",   cue:"虎口朝上，手肘夾緊身側。鍛鍊肱肌和前臂，讓手臂更立體。",                     muscle:"二頭",compound:false,focus:["二頭","背"]},
+  {zh:"繩索錘式彎舉",       en:"Cable Hammer Curl",                sets:"3×15",   cue:"虎口朝上，繩索提供全程張力，從完全伸展到完全收縮，感受肱肌。",                 muscle:"二頭",compound:false,focus:["二頭"]},
+  {zh:"反握彎舉",           en:"Reverse Curl",                     sets:"3×12",   cue:"正握槓鈴或 EZ 槓，掌心朝下彎舉，鍛鍊肱橈肌和前臂伸肌。",                    muscle:"二頭",compound:false,focus:["二頭"]},
+  {zh:"斜板啞鈴彎舉",       en:"Incline Dumbbell Curl",            sets:"3×12",   cue:"靠在上斜凳上，手臂自然下垂讓二頭完全拉伸，緩慢彎舉感受全範圍刺激。",            muscle:"二頭",compound:false,focus:["二頭"]},
+  // ── 三頭 ─────────────────────────────────────────────────────────────
+  {zh:"繩索三頭下壓",       en:"Cable Tricep Pushdown",            sets:"3×15",   cue:"手肘夾緊固定，只動前臂往下壓，頂端完全伸直。",                                muscle:"三頭",compound:false,focus:["胸","三頭"]},
+  {zh:"V 形棒三頭下壓",     en:"V-Bar Tricep Pushdown",            sets:"3×15",   cue:"V 形把手讓手腕更自然，往下壓到底完全伸直，感受三頭外側頭收縮。",               muscle:"三頭",compound:false,focus:["三頭"]},
+  {zh:"繩索三頭過頭伸展",   en:"Cable Overhead Tricep Ext",        sets:"3×15",   cue:"面背滑輪，雙手舉繩至頭後方，只動前臂往上伸直，感受三頭長頭拉伸。",             muscle:"三頭",compound:false,focus:["三頭"]},
+  {zh:"啞鈴仰臥三頭伸展",   en:"Dumbbell Skull Crusher",           sets:"3×12",   cue:"仰臥，啞鈴從頭側下降到耳旁再推回，只動手肘不動肩膀。",                        muscle:"三頭",compound:false,focus:["三頭"]},
+  {zh:"EZ 槓仰臥伸展",      en:"EZ Bar Skull Crusher",             sets:"3×12",   cue:"EZ 槓下降到額頭上方 5cm，手肘保持朝天花板，感受三頭長頭拉伸。",              muscle:"三頭",compound:false,focus:["三頭"]},
+  {zh:"啞鈴單臂過頭伸展",   en:"Single-arm Overhead Tricep Ext",   sets:"3×12",   cue:"單手持啞鈴舉到頭上，前臂往後下降充分拉伸三頭長頭，再用三頭力量推回。",          muscle:"三頭",compound:false,focus:["三頭"]},
+  {zh:"窄握槓鈴臥推",       en:"Close Grip Bench Press",           sets:"3×10",   cue:"握距略窄於肩，下降時手肘貼身，以三頭為主發力推起。",                          muscle:"三頭",compound:true, focus:["三頭"]},
+  {zh:"俯身三頭後踢",       en:"Tricep Kickback",                  sets:"3×15",   cue:"身體前傾，上臂與地面平行，只動前臂往後伸直，在頂點停 1 秒感受外側頭。",        muscle:"三頭",compound:false,focus:["三頭"]},
+  {zh:"繩索單臂三頭下壓",   en:"Single-arm Cable Pushdown",        sets:"3×12",   cue:"單手下壓，可感受雙側差異，確保兩側均衡發展。完全伸直後停頓。",                 muscle:"三頭",compound:false,focus:["三頭"]},
+  // ── 腿 ──────────────────────────────────────────────────────────────
+  {zh:"深蹲機",             en:"Hack Squat Machine",               sets:"4×10",   cue:"腳掌寬度與肩同寬，下蹲到大腿平行地面，膝蓋對齊腳趾，背部貼緊靠墊。",           muscle:"腿",compound:true, focus:["腿","全身"]},
+  {zh:"腿部推蹬機",         en:"Leg Press",                        sets:"4×12",   cue:"腳掌平放踏板中段，下降到膝蓋 90 度，不要讓膝蓋往內夾。",                     muscle:"腿",compound:true, focus:["腿","全身"]},
+  {zh:"槓鈴深蹲",           en:"Barbell Back Squat",               sets:"4×8",    cue:"槓放斜方肌，腳寬與肩同寬，下蹲時膝蓋順著腳尖方向，核心全程繃緊，到大腿平行地面。",muscle:"腿",compound:true, focus:["腿","臀","全身"]},
+  {zh:"前蹲舉",             en:"Front Squat",                      sets:"3×8",    cue:"槓放前三角肌，手肘高舉保持上身直立，下蹲時膝蓋大幅前推，刺激前側股四頭肌更多。", muscle:"腿",compound:true, focus:["腿","全身"]},
+  {zh:"保加利亞分腿蹲",     en:"Bulgarian Split Squat",            sets:"3×10",   cue:"後腳放凳上，前腳距離凳約大腿長度，垂直下蹲，前膝不超過腳趾，感受前腿股四頭。",   muscle:"腿",compound:true, focus:["腿","臀"]},
+  {zh:"羅馬尼亞硬舉",       en:"Romanian Deadlift",                sets:"3×12",   cue:"髖部往後推讓槓貼大腿下滑，感受後腿拉伸，背部全程打直。",                      muscle:"腿",compound:true, focus:["腿","臀","全身"]},
+  {zh:"單腿羅馬尼亞硬舉",   en:"Single-leg Romanian Deadlift",     sets:"3×10",   cue:"單腿支撐，身體前傾讓後腿自然往後抬，感受支撐腿的後腿鏈，保持骨盆水平。",        muscle:"腿",compound:true, focus:["腿","臀"]},
+  {zh:"坐姿腿後彎",         en:"Seated Leg Curl",                  sets:"3×15",   cue:"大腿貼緊坐墊，把腳跟往臀部捲到底，頂端停 1 秒感受腿後肌收縮。",               muscle:"腿",compound:false,focus:["腿"]},
+  {zh:"俯臥腿後彎",         en:"Lying Leg Curl",                   sets:"3×15",   cue:"俯臥大腿貼緊墊，把腳跟往臀部捲，頂端停 1 秒，緩慢下放，全程控制。",            muscle:"腿",compound:false,focus:["腿"]},
+  {zh:"腿部伸展機",         en:"Leg Extension",                    sets:"3×15",   cue:"背部靠緊椅背，把小腿往前伸直感受股四頭肌收縮，不要甩腿借力。",                 muscle:"腿",compound:false,focus:["腿","全身"]},
+  {zh:"腿推機寬蹲",         en:"Wide Stance Leg Press",            sets:"4×12",   cue:"腳掌寬距放踏板上方，下降時感受臀部和大腿內側，對臀部刺激更強。",               muscle:"腿",compound:true, focus:["腿","臀"]},
+  {zh:"啞鈴分腿蹲",         en:"Dumbbell Split Squat",             sets:"3×12",   cue:"前腳踩穩，後腳放凳上，垂直下蹲感受前腳臀腿發力，膝蓋不超過腳趾。",             muscle:"腿",compound:true, focus:["腿","臀"]},
+  {zh:"坐姿大腿內收",       en:"Seated Hip Adduction",             sets:"3×20",   cue:"緩慢向內夾緊到底，感受大腿內側收縮，不要借用腰部力量。",                      muscle:"腿",compound:false,focus:["腿"]},
+  {zh:"站姿大腿內收",       en:"Standing Hip Adduction",           sets:"3×15",   cue:"繩索套腳踝，站姿把腿往中線夾，感受大腿內收肌群，全程保持站穩。",               muscle:"腿",compound:false,focus:["腿"]},
+  {zh:"坐姿提踵",           en:"Seated Calf Raise",                sets:"4×20",   cue:"腳尖踮到最高點停 1 秒，再緩慢下放到底部充分拉伸，全程控制速度。",               muscle:"腿",compound:false,focus:["腿"]},
+  {zh:"立姿小腿提踵",       en:"Standing Calf Raise",              sets:"4×20",   cue:"腳尖踮到最高點停 1 秒，緩慢下放到底充分拉伸。全程控制速度。",                  muscle:"腿",compound:false,focus:["腿"]},
+  {zh:"史密斯機深蹲",       en:"Smith Machine Squat",              sets:"4×10",   cue:"腳掌略往前，借助軌道穩定性專注感受腿部發力，膝蓋對齊腳趾方向。",               muscle:"腿",compound:true, focus:["腿","全身"]},
+  {zh:"相撲深蹲",           en:"Sumo Squat",                       sets:"3×12",   cue:"腳寬大於肩，腳尖外開約 45 度，下蹲時感受大腿內側和臀部，膝蓋對齊腳尖。",       muscle:"腿",compound:true, focus:["腿","臀"]},
+  // ── 臀 ──────────────────────────────────────────────────────────────
+  {zh:"槓鈴臀推",           en:"Barbell Hip Thrust",               sets:"4×12",   cue:"上背靠凳，槓放髖骨上方墊護具，腳掌踩穩，推到頂點夾緊臀部停 2 秒。",           muscle:"臀",compound:true, focus:["臀","腿","全身"]},
+  {zh:"臀推機",             en:"Hip Thrust Machine",               sets:"4×15",   cue:"上背靠墊，腳掌踩穩，用臀部力量把髖部推到最高點並夾緊，停 1 秒。",             muscle:"臀",compound:true, focus:["臀","腿","全身"]},
+  {zh:"啞鈴臀推",           en:"Dumbbell Hip Thrust",              sets:"3×15",   cue:"上背靠凳，啞鈴放髖骨上，用臀部力量推起到頂點夾緊停 2 秒。入門版。",           muscle:"臀",compound:true, focus:["臀","腿"]},
+  {zh:"臀橋",               en:"Glute Bridge",                     sets:"3×20",   cue:"仰臥屈膝腳踩地，用臀部力量把髖部推到最高點，頂端夾緊停 2 秒，緩慢下放。",      muscle:"臀",compound:true, focus:["臀"]},
+  {zh:"單腿臀橋",           en:"Single-leg Glute Bridge",          sets:"3×15",   cue:"一腿伸直懸空，另一腿推起髖部，感受單側臀部發力，保持骨盆水平。",               muscle:"臀",compound:true, focus:["臀"]},
+  {zh:"繩索臀部後踢",       en:"Cable Glute Kickback",             sets:"3×15",   cue:"腳踝扣繩索，身體微前傾扶機器，用臀部力量把腿往後上方踢，不要借腰。",           muscle:"臀",compound:false,focus:["臀"]},
+  {zh:"坐姿髖外展",         en:"Seated Hip Abduction",             sets:"3×20",   cue:"緩慢往外打開到最大幅度，在頂端停 1 秒感受臀中肌收縮。",                      muscle:"臀",compound:false,focus:["臀","腿"]},
+  {zh:"站姿髖外展",         en:"Standing Hip Abduction",           sets:"3×15",   cue:"繩索套腳踝，站姿把腿往側面抬，感受臀中肌，保持身體穩定不要側傾。",             muscle:"臀",compound:false,focus:["臀"]},
+  {zh:"反向蹬腿",           en:"Reverse Hack Squat",               sets:"3×12",   cue:"面向機器，臀部往後推主導，感受臀腿後側鏈發力，比正向蹬腿更刺激臀部。",         muscle:"臀",compound:true, focus:["臀","腿"]},
+  // ── 核心 ─────────────────────────────────────────────────────────────
+  {zh:"繩索捲腹",           en:"Cable Crunch",                     sets:"3×15",   cue:"跪姿用腹肌捲下，不是用手拉頭，是腹部主動收縮。",                            muscle:"核心",compound:false,focus:["核心","肩","全身"]},
+  {zh:"懸吊抬腿",           en:"Hanging Leg Raise",                sets:"3×12",   cue:"雙手懸掛槓上，腹部收緊把腿抬到與地面平行，緩慢下放不要甩動。",                muscle:"核心",compound:false,focus:["核心","肩"]},
+  {zh:"懸吊抬膝",           en:"Hanging Knee Raise",               sets:"3×15",   cue:"雙手懸掛，屈膝把膝蓋往胸部方向抬，感受下腹部收縮，緩慢下放。",               muscle:"核心",compound:false,focus:["核心","肩"]},
+  {zh:"木材劈砍",           en:"Cable Woodchop",                   sets:"3×12",   cue:"繩索從高往低斜向拉，旋轉軀幹感受腹斜肌，雙腳固定不動，核心主導動作。",        muscle:"核心",compound:false,focus:["核心"]},
+  {zh:"腹部訓練機",         en:"Ab Machine",                       sets:"3×20",   cue:"背部貼靠墊，用腹肌發力把上身往前捲，不要靠慣性，感受腹直肌收縮。",            muscle:"核心",compound:false,focus:["核心"]},
+];
+
+// 每個訓練主題的肌群優先順序（決定 6 個動作的挑選和排列邏輯）
+const DAY_PROFILE = {
+  "胸":   { primary:["胸"],          secondary:["三頭"],         note:"胸部複合動作先，孤立收尾，三頭最後" },
+  "背":   { primary:["背"],          secondary:["二頭"],         note:"引體/划船複合先，二頭孤立收尾" },
+  "肩":   { primary:["肩"],          secondary:["核心"],         note:"推系複合先，三個三角肌頭都刺激，核心收尾" },
+  "腿":   { primary:["腿"],          secondary:["臀"],           note:"深蹲/腿推複合先，前後側都要練，小腿收尾" },
+  "臀":   { primary:["臀","腿"],     secondary:["核心"],         note:"臀推必排第一，主攻臀腿後側鏈" },
+  "全身": { primary:["腿","背","胸"],secondary:["肩","核心"],    note:"腿先耗體力，推拉交替，核心收尾" },
+  "二頭": { primary:["二頭"],        secondary:["背"],           note:"複合划船先借力二頭，孤立彎舉收尾" },
+  "三頭": { primary:["三頭","胸"],   secondary:["肩"],           note:"窄握臥推/雙槓複合先，孤立收尾" },
+  "核心": { primary:["核心"],        secondary:["腿"],           note:"棒式等靜態先，動態高強度後，伸展收尾" },
+};
+
+// ── Storage ───────────────────────────────────────────────────────────
+function ls(key, def) {
+  try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : def; } catch { return def; }
+}
+function ls_set(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+
+// 統一 key 格式：fitness/{user}/{type}
+const STORAGE_KEYS = {
+  currentUser:  () => 'fitness/current_user',
+  progress:     (u) => `fitness/${u}/progress`,
+  logs:         (u) => `fitness/${u}/logs`,
+  lastTraining: (u) => `fitness/${u}/last_training`,
+  targetWeight: (u) => `fitness/${u}/target_weight`,
+  checked:      (u, date) => `fitness/${u}/checked/${date}`,
+  setsDone:     (u, date) => `fitness/${u}/sets/${date}`,
+  diet:         (u, date) => `fitness/${u}/diet/${date}`,
+  dietIndex:    (u) => `fitness/${u}/diet_index`,
+  water:        (u, date) => `fitness/${u}/water/${date}`,
+  streak:       (u) => `fitness/${u}/streak`,
+  customFoods:  (u) => `fitness/${u}/custom_foods`,
+  favorites:    (u) => `fitness/${u}/favorites`, // kept for backward compat (old data cleanup)
+  customDays:   (u) => `fitness/${u}/custom_days`,
+  recommend:    (u, date) => `fitness/${u}/recommend/${date}`,
+  lastTab:      (u) => `fitness/${u}/last_tab`,
+};
+
+function uk(type) { return STORAGE_KEYS[type] ? STORAGE_KEYS[type](currentUser) : `fitness/${currentUser}/${type}`; }
+function dietDayKey() { return STORAGE_KEYS.diet(currentUser, getTodayKey().replace(/\//g,'-')); }
+
+function toggleConfirmInline(show) {
+  const el = document.getElementById('diet-confirm-box');
+  if (el) el.classList.toggle('open', show);
+}
+
+// ── State ─────────────────────────────────────────────────────────────
+let currentTab = 0, openCues = {}, openDietHistory = {};
+
+function toggleCue(k) { openCues[k] = !openCues[k]; renderToday(); }
+let customDays = [];
+let todayRecommend = null;
+let daySetsDone = {}; // { 'today-0': [true,true,false,false], ... }
+let todayWater = 0;
+let customFoods = [];
+window._todayExList = []; // 今日顯示的動作清單（推薦 or 原始），供 toggleCheck 使用
+let pendingLogIdx = null; // 正在等待記錄的動作 index
+let currentUser = ls(STORAGE_KEYS.currentUser(), "alex");
+let todayOverride = null;
+// getTodayKey() 改成 getter，每次存取都重新計算，避免跨天 bug
+function getTodayKey() { return new Date().toLocaleDateString('zh-TW'); }
+// 相容舊程式碼：用 Proxy 讓 getTodayKey() 當變數使用仍能拿到最新日期
+const _todayKeyProxy = { get todayKey() { return getTodayKey(); } };
+// 直接用 getTodayKey() 取代所有 getTodayKey()（在下方統一替換）
+let progressEntries = [], trainingLogs = {}, dayChecked = {};
+let todayCalories = 0, todayProtein = 0, todayFoodLog = [];
+const DAYS_DATA = [], ALL_EX = [];
+
+
+
+
+function loadUserState() {
+  const safeDate = getTodayKey().replace(/\//g,'-');
+  progressEntries = ls(STORAGE_KEYS.progress(currentUser), []);
+  trainingLogs = ls(STORAGE_KEYS.logs(currentUser), {});
+  customDays = ls(STORAGE_KEYS.customDays(currentUser), []);
+  dayChecked = ls(STORAGE_KEYS.checked(currentUser, safeDate), {});
+  daySetsDone = ls(STORAGE_KEYS.setsDone(currentUser, safeDate), {});
+  todayWater = ls(STORAGE_KEYS.water(currentUser, safeDate), 0);
+  customFoods = ls(STORAGE_KEYS.customFoods(currentUser), []);
+  const diet = ls(dietDayKey(), { calories:0, protein:0, log:[] });
+  todayCalories = diet.calories || 0;
+  todayProtein = diet.protein || 0;
+  todayFoodLog = diet.log || [];
+  DAYS_DATA.length = 0; USERS[currentUser].days.forEach(d => DAYS_DATA.push(d));
+  customDays.forEach(d => DAYS_DATA.push(d)); // 加入自訂計畫
+  ALL_EX.length = 0; DAYS_DATA.flatMap(d => d.ex.map(e => e.zh)).forEach(e => ALL_EX.push(e));
+  todayOverride = null;
+}
+
+// SSE 監聽已停用，改為純讀寫模式
+// SSE 監聽已停用
+function setupListeners() {}
+
+function selectUser(uid) {
+  ls_set(STORAGE_KEYS.currentUser(), uid);
+  currentUser = uid;
+  document.getElementById('onboarding').style.display = 'none';
+  loadUserState();
+  updateHeroUser();
+  renderAll();
+}
+
+function updateHeroUser() {
+  const u = USERS[currentUser];
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+  set('hero-name', u.name);
+  set('hero-stats-sub', u.stats);
+  set('hero-kcal', u.kcalTarget.toLocaleString());
+  set('hero-protein', u.proteinTarget + 'g');
+  set('hero-days', u.days.length + '天');
+}
+
+function saveChecked() {
+  const safeDate = getTodayKey().replace(/\//g,'-');
+  ls_set(STORAGE_KEYS.checked(currentUser, safeDate), dayChecked);
+}
+
+function saveLastTraining(idx) {
+  ls_set(STORAGE_KEYS.lastTraining(currentUser), { idx, date: getTodayKey() });
+}
+
+function getRecommendedDayIdx() {
+  const last = ls(STORAGE_KEYS.lastTraining(currentUser), null);
+  if (!last) return 0;
+  if (last.date === getTodayKey()) return -1;
+  return (last.idx + 1) % DAYS_DATA.length;
+}
+
+function showLoading(show) {
+  let el = document.getElementById('loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-overlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;font-size:13px;color:#c8f537;letter-spacing:2px';
+    el.innerText = '載入中...';
+    document.body.appendChild(el);
+  }
+  el.style.display = show ? 'flex' : 'none';
+}
+
+function renderAll() {
+  if (!document.getElementById('today-section')) return;
+  updateHeroUser(); renderHeroBanner(); renderToday();
+  renderProgress();
+  updateDietDisplay(); renderDietHistory();
+  renderWater(); renderStreak(); renderCustomFoods(); renderQuickDiet(); renderWeekDietSummary();
+}
+
+// ── Smart Today Logic ─────────────────────────────────────────────────
+function getTodayDayIdx() { return todayOverride !== null ? todayOverride : getRecommendedDayIdx(); }
+function getTodayDay() { const i = getTodayDayIdx(); return i === -1 ? null : DAYS_DATA[i] || null; }
+function setTodayOverride(val) { todayOverride = val; dayChecked = {}; daySetsDone = {}; todayRecommend = null; pendingLogIdx = null; renderToday(); renderHeroBanner(); }
+
+// ── Tabs ──────────────────────────────────────────────────────────────
+function switchTab(i) {
+  document.querySelectorAll('.tab-content').forEach((el,j) => el.classList.toggle('active', j===i));
+  document.querySelectorAll('.tab-btn').forEach((el,j) => el.classList.toggle('active', j===i));
+  document.getElementById('scroll').scrollTop = 0;
+  currentTab = i;
+  if (i === 3) { updateTimerDisplay(); syncTimerBtn(); }
+  if (currentUser) ls_set(STORAGE_KEYS.lastTab(currentUser), i);
+}
+
+// ── Hero collapse ─────────────────────────────────────────────────────
+function initScrollCollapse() {
+  const scrollEl = document.getElementById('scroll');
+  const heroEl = document.getElementById('hero');
+  scrollEl.addEventListener('scroll', () => {
+    const collapsed = scrollEl.scrollTop > 100;
+    if (collapsed === heroEl.classList.contains('collapsed')) return;
+    heroEl.classList.toggle('expanded', !collapsed);
+    heroEl.classList.toggle('collapsed', collapsed);
+    document.getElementById('hero-collapsed').style.display = collapsed ? 'flex' : 'none';
+    document.getElementById('hero-expanded-content').style.display = collapsed ? 'none' : 'block';
+  }, { passive: true });
+  document.getElementById('hero-collapsed').style.display = 'none';
+}
+
+// ── Hero banner ───────────────────────────────────────────────────────
+function renderHeroBanner() {
+  const td = getTodayDay();
+  const miniEl = document.getElementById('hero-done-mini');
+  if (!miniEl) return;
+  if (td) {
+    const exList = window._todayExList && window._todayExList.length ? window._todayExList : td.ex;
+    const done = exList.filter((_,i) => dayChecked[i]).length;
+    miniEl.textContent = `${done}/${exList.length} 完成`;
+  } else { miniEl.textContent = '休息日'; }
+}
+
+// ── Smart Recommendation Engine ──────────────────────────────────────
+
+// 分析單一動作歷史 → 建議重量/次數
+function analyzeExercise(exName) {
+  const logs = trainingLogs[exName] || [];
+  if (!logs.length) return { suggestW:null, suggestR:null, reason:'首次嘗試', status:'new', daysSince:999 };
+  const last = logs[0], prev = logs[1] || null;
+  const w = parseFloat(last.w), r = parseInt(last.r);
+  // 幾天沒練（用於決定優先度）
+  const lastDate = new Date(last.date.replace(/\//g,'-'));
+  const daysSince = Math.floor((new Date() - lastDate) / 86400000);
+
+  if (prev) {
+    const pw = parseFloat(prev.w), pr = parseInt(prev.r);
+    if (w > pw)      return { suggestW:w,                              suggestR:Math.min(r+2,15), reason:`上次 +${(w-pw).toFixed(1)}lb 進步，繼續挑戰`, status:'progress', daysSince };
+    if (r - pr >= 2) return { suggestW:+(w+(w>=20?2.5:1)).toFixed(1), suggestR:Math.max(r-2,6),  reason:`次數達 ${r} 下，可嘗試加重`,                  status:'ready_up', daysSince };
+    if (w < pw)      return { suggestW:pw,                             suggestR:pr,               reason:`上次退步，回到 ${pw}lb 穩固`,                 status:'regress',  daysSince };
+  }
+  return { suggestW:w, suggestR:r, reason:`延續上次 ${last.w}lb×${last.r}下`, status:'maintain', daysSince };
+}
+
+// 從 EXERCISE_BANK 智慧選 6 個動作
+// 順序：主肌群複合 → 主肌群孤立 → 次要肌群複合 → 次要肌群孤立 → 補滿
+function generateSmartMenu(theme) {
+  const profile = DAY_PROFILE[theme];
+  if (!profile) return null;
+
+  const allMuscles = [...profile.primary, ...profile.secondary];
+
+  // 候選池：符合 focus 的動作，附帶分析和分數
+  const scored = EXERCISE_BANK
+    .filter(e => e.focus && e.focus.some(f => allMuscles.includes(f)))
+    .map(e => {
+      const a = analyzeExercise(e.zh);
+      const weakScore = { regress:100, new:80, maintain:40, ready_up:20, progress:10 }[a.status] || 40;
+      const freshScore = Math.min(a.daysSince * 2, 60);
+      const primaryBonus = profile.primary.includes(e.muscle) ? 30 : 0;
+      // 加入隨機擾動（±15分），讓重新生成能產生不同結果
+      const jitter = Math.random() * 30 - 15;
+      return { ...e, ...a, score: weakScore + freshScore + primaryBonus + jitter };
+    });
+
+  const picked = new Set();
+  const final = [];
+
+  function pickBest(pool) {
+    const candidates = pool.filter(e => !picked.has(e.zh));
+    if (!candidates.length) return null;
+    const best = candidates.sort((a, b) => b.score - a.score)[0];
+    picked.add(best.zh);
+    return best;
+  }
+
+  // 1. 主肌群複合動作（最多 2 個，但同肌群只取 1 個）
+  const primaryCompounds = scored.filter(e => e.compound && profile.primary.includes(e.muscle));
+  const usedPrimaryMuscle = new Set();
+  for (const e of primaryCompounds.sort((a,b) => b.score - a.score)) {
+    if (final.length >= 2) break;
+    if (!usedPrimaryMuscle.has(e.muscle) && !picked.has(e.zh)) {
+      picked.add(e.zh);
+      usedPrimaryMuscle.add(e.muscle);
+      final.push(e);
+    }
+  }
+
+  // 2. 主肌群孤立動作（最多 2 個）
+  for (const muscle of profile.primary) {
+    if (final.length >= 4) break;
+    const pool = scored.filter(e => !e.compound && e.muscle === muscle);
+    const best = pickBest(pool);
+    if (best) final.push(best);
+  }
+  // 如果主肌群孤立不夠，多補一個
+  for (const muscle of profile.primary) {
+    if (final.length >= 4) break;
+    const pool = scored.filter(e => !e.compound && e.muscle === muscle);
+    const best = pickBest(pool);
+    if (best) final.push(best);
+  }
+
+  // 3. 次要肌群複合（最多 1 個）
+  for (const muscle of profile.secondary) {
+    if (final.length >= 5) break;
+    const pool = scored.filter(e => e.compound && e.muscle === muscle);
+    const best = pickBest(pool);
+    if (best) { final.push(best); break; }
+  }
+
+  // 4. 次要肌群孤立（補到 6 個）
+  for (const muscle of [...profile.secondary, ...profile.primary]) {
+    if (final.length >= 6) break;
+    const pool = scored.filter(e => !e.compound && e.muscle === muscle);
+    const best = pickBest(pool);
+    if (best) final.push(best);
+  }
+
+  // 5. 如果還不夠 6 個，從剩餘高分補
+  const remaining = scored.sort((a,b) => b.score - a.score);
+  for (const e of remaining) {
+    if (final.length >= 6) break;
+    if (!picked.has(e.zh)) { final.push(e); picked.add(e.zh); }
+  }
+
+  return {
+    theme,
+    note: profile.note,
+    exercises: final.slice(0, 6).map(e => ({ ...e, rec: true })),
+    generatedAt: Date.now(),
+  };
+}
+
+// 取得今日推薦（主題從訓練日 title 解析）
+function getThemeFromDay(td) {
+  if (!td) return null;
+  // 先用 sub（更精確），再用 title，再用 note
+  const src = (td.sub || '') + ' ' + (td.title || '') + ' ' + (td.note || '');
+  const map = [
+    ['臀腿', '臀'], ['GLUTE', '臀'],
+    ['腿', '腿'], ['LEG', '腿'],
+    ['臀', '臀'],
+    ['胸', '胸'], ['CHEST', '胸'],
+    ['背', '背'], ['BACK', '背'],
+    ['肩', '肩'], ['SHOULDER', '肩'],
+    ['二頭', '二頭'], ['BICEP', '二頭'],
+    ['三頭', '三頭'], ['TRICEP', '三頭'],
+    ['核心', '核心'], ['CORE', '核心'],
+    ['腹', '核心'],
+    // 全身：最後才 fallback，避免「全身最大的肌群」這種 note 誤判
+    ['FULL BODY', '全身'],
+  ];
+  for (const [keyword, theme] of map) {
+    if (src.toUpperCase().includes(keyword.toUpperCase())) return theme;
+  }
+  // 自訂計畫：從動作肌群推斷
+  if (td.ex && td.ex.length) {
+    const muscles = td.ex.map(e => {
+      const found = EXERCISE_BANK.find(b => b.zh === e.zh);
+      return found ? found.muscle : null;
+    }).filter(Boolean);
+    const counts = {};
+    muscles.forEach(m => counts[m] = (counts[m]||0) + 1);
+    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    if (top) return top[0];
+  }
+  return '全身';
+}
+
+function getOrGenerateRecommend(dayIdx) {
+  const td = DAYS_DATA[dayIdx];
+  if (!td) return null;
+  const theme = getThemeFromDay(td);
+  // 記憶體裡已有同主題的推薦就直接用
+  if (todayRecommend && todayRecommend.theme === theme) return todayRecommend;
+  // 嘗試從 localStorage 讀今天的推薦
+  const saved = ls(STORAGE_KEYS.recommend(currentUser, getTodayKey().replace(/\//g,'-')), null);
+  if (saved && saved.theme === theme) {
+    todayRecommend = saved;
+    return todayRecommend;
+  }
+  // 重新生成並存到 localStorage（今天有效）
+  todayRecommend = generateSmartMenu(theme);
+  ls_set(STORAGE_KEYS.recommend(currentUser, getTodayKey().replace(/\//g,'-')), todayRecommend);
+  return todayRecommend;
+}
+
+function regenRecommend() {
+  todayRecommend = null;
+  // 清掉 localStorage 的今日推薦，才不會被 getOrGenerateRecommend 讀回舊的
+  try { localStorage.removeItem(STORAGE_KEYS.recommend(currentUser, getTodayKey().replace(/\//g,'-'))); } catch(e) {}
+  renderToday();
+}
+
+// 替換單一動作（換同主題但不同動作）
+function swapRecommendEx(recIdx) {
+  if (!todayRecommend) return;
+  const cur = todayRecommend.exercises[recIdx];
+  const currentNames = new Set(todayRecommend.exercises.map(e => e.zh));
+  const profile = DAY_PROFILE[todayRecommend.theme];
+  if (!profile) return;
+  const allMuscles = [...profile.primary, ...profile.secondary];
+
+  // 同肌群的替代選項（排除已選）
+  const candidates = EXERCISE_BANK.filter(e =>
+    allMuscles.includes(e.muscle) &&
+    !currentNames.has(e.zh)
+  );
+  if (!candidates.length) return;
+
+  // 優先選同肌群
+  const sameMuscle = candidates.filter(e => e.muscle === cur.muscle);
+  const pool = sameMuscle.length ? sameMuscle : candidates;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  const analysis = analyzeExercise(pick.zh);
+  todayRecommend.exercises[recIdx] = { ...pick, ...analysis, rec: true };
+
+  // 存回 localStorage 讓下次 render 不會還原
+  ls_set(STORAGE_KEYS.recommend(currentUser, getTodayKey().replace(/\//g,'-')), todayRecommend);
+  renderToday();
+}
+
+// ── Today ─────────────────────────────────────────────────────────────
+
+// 1. 訓練日切換器
+function renderDaySwitcher(idx, recIdx) {
+  const btns = DAYS_DATA.map((d, i) => `
+    <button onclick="setTodayOverride(${i})" class="day-switch-btn ${idx===i?'active':''}">
+      ${d.title.split(' + ')[0]}
+      ${i===recIdx&&todayOverride===null?`<span class="day-rec-dot">●</span>`:''}
+    </button>`).join('');
+  const restActive = idx === -1;
+  return `
+    <div class="day-switcher">
+      ${btns}
+      <button onclick="setTodayOverride(-1)" class="day-switch-btn ${restActive?'rest-active':''}">休息</button>
+    </div>
+    <div class="day-switch-hint">${todayOverride===null?'● 根據上次訓練推薦':'● 手動選擇'}</div>`;
+}
+
+// 2. 休息日畫面
+function renderRestDay() {
+  return `<div class="rest-center">
+    <div class="rest-emoji">💤</div>
+    <div class="rest-title">今天休息</div>
+    <div class="rest-sub">好好睡覺、補充蛋白質<br>肌肉是休息時長的</div>
+  </div>`;
+}
+
+// 3. 體重小卡片
+function renderWeightCard() {
+  const latest = progressEntries[0], prev2 = progressEntries[1];
+  if (!latest) {
+    return `<div onclick="switchTab(0)" class="weight-card">
+      <div class="weight-card-empty">還沒有體重紀錄，點此前往記錄 →</div>
+    </div>`;
+  }
+  const diff = prev2 ? (parseFloat(latest.w)-parseFloat(prev2.w)).toFixed(1) : null;
+  const diffHtml = diff !== null
+    ? `<span style="color:${parseFloat(diff)>0?'var(--danger)':'var(--primary)'}">${parseFloat(diff)>0?'+':''}${diff} lb</span>`
+    : '';
+  const fatHtml = latest.f
+    ? `<div class="wc-fat-label">體脂</div><div class="wc-fat-val">${latest.f}<span class="wc-unit"> %</span></div>`
+    : `<div class="wc-empty">點此更新體重 →</div>`;
+  return `<div onclick="switchTab(0)" class="weight-card">
+    <div>
+      <div class="wc-label">本週體重</div>
+      <div class="wc-val">${latest.w} <span class="wc-unit">lb</span> ${diffHtml}</div>
+    </div>
+    <div class="text-right">${fatHtml}</div>
+  </div>`;
+}
+
+// 3.5 推薦 banner
+function renderRecommendBanner(rec) {
+  if (!rec) return '';
+  const hasNew = rec.exercises.some(e => e.status === 'new');
+  const hasProgress = rec.exercises.some(e => e.status === 'progress' || e.status === 'ready_up');
+  let msg = '根據你的訓練紀錄生成今日建議';
+  if (hasNew) msg = '包含首次嘗試的動作，感受肌肉收縮比重量更重要';
+  else if (hasProgress) msg = '你有動作在進步中！今天繼續挑戰 💪';
+  return `<div class="rec-banner">
+    <span class="rec-banner-icon">🤖</span>
+    <span class="rec-banner-text">${msg}</span>
+    <button class="rec-refresh-btn" onclick="regenRecommend()">重新生成</button>
+  </div>`;
+}
+
+// renderExList 的推薦版：每個動作多一個建議重量 + 換掉按鈕
+function renderExListWithRec(exercises, rec, prefix, showCheck) {
+  return exercises.map((ex, i) => {
+    const k = `${prefix}-${i}`, isOpen = openCues[k], done = showCheck && dayChecked[i];
+
+    // 推薦資訊
+    let recHtml = '';
+    if (rec && ex.suggestW) {
+      const statusIcon = { progress:'📈', ready_up:'⬆️', maintain:'✓', regress:'⚠️', new:'🆕' }[ex.status] || '';
+      recHtml = `<div class="rec-suggest">
+        <span class="rec-suggest-val">${statusIcon} 建議 ${ex.suggestW}lb × ${ex.suggestR}下</span>
+        <span class="rec-suggest-reason">${ex.reason}</span>
+      </div>`;
+    } else if (rec && ex.status === 'new') {
+      recHtml = `<div class="rec-suggest">
+        <span class="rec-suggest-val">🆕 首次嘗試</span>
+        <span class="rec-suggest-reason">先用輕重量感受動作</span>
+      </div>`;
+    }
+
+    // 組數追蹤
+    const setsCount = parseSetsCount(ex.sets);
+    const doneSets = (daySetsDone[`${prefix}-${i}`] || []);
+    const setTrackerHtml = `<div class="set-tracker">
+      ${Array.from({length:setsCount},(_,si)=>`
+        <div class="set-dot ${doneSets[si]?'done':si===doneSets.filter(Boolean).length?'active':''}"
+             onclick="toggleSet('${prefix}',${i},${si},${setsCount});event.stopPropagation()">
+          ${doneSets[si]?'✓':si+1}
+        </div>`).join('')}
+      <span class="set-label">${doneSets.filter(Boolean).length}/${setsCount} 組</span>
+    </div>`;
+
+    const lastLog = trainingLogs[ex.zh]?.[0];
+    const prevHint = lastLog ? `上次 ${lastLog.w}lb × ${lastLog.r}下` : '';
+    const showQuickLog = showCheck && pendingLogIdx === i && dayChecked[i];
+    const nextSuggest = showQuickLog ? calcNextWeight(ex.zh) : null;
+    const prBadge = lastLog?.pr ? `<span class="pr-badge">🏆 PR</span>` : '';
+
+    // 趨勢折線圖（有紀錄時顯示）
+    const trendHtml = showQuickLog ? renderExTrendChart(ex.zh) : '';
+
+    const quickLogHtml = showQuickLog ? `
+      <div class="quick-log">
+        ${lastLog ? `<button class="quick-log-same" onclick="sameAsLast(${i})">↩ 同上次：${lastLog.w}lb × ${lastLog.r}下</button>` : ''}
+        ${nextSuggest ? `<div class="quick-log-suggest">💡 建議：${nextSuggest.w}lb — ${nextSuggest.reason}</div>` : ''}
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <div class="quick-log-field">
+            <span class="quick-log-label">重量 LB</span>
+            <input id="ql-w" class="quick-log-inp" type="number" inputmode="decimal" placeholder="${lastLog ? lastLog.w : '0'}" step="0.5" min="0">
+          </div>
+          <div class="quick-log-field" style="max-width:80px">
+            <span class="quick-log-label">次數</span>
+            <input id="ql-r" class="quick-log-inp" type="number" inputmode="numeric" placeholder="${lastLog ? lastLog.r : '0'}" min="1">
+          </div>
+          <button class="quick-log-save" onclick="saveQuickLog(${i})">記錄</button>
+          <button class="quick-log-skip" onclick="skipQuickLog(${i})">略過</button>
+        </div>
+      </div>` : '';
+
+    return `<div class="ex-item" id="exitem-${k}">
+      <div class="ex-row">
+        <div class="ex-main" onclick="toggleCue('${k}')">
+          <div class="ex-top">
+            <span class="ex-num ${done?'done':''}">${i+1}</span>
+            <span class="ex-name ${done?'done':''}">${ex.zh}${prBadge}</span>
+            <span class="ex-sets">${ex.sets}</span>
+            ${rec ? `<button class="rec-swap-btn" onclick="swapRecommendEx(${i});event.stopPropagation()" title="換一個">⇄</button>` : ''}
+          </div>
+          <div class="ex-bottom">
+            <span class="ex-en">${ex.en}</span>
+            <span class="ex-expand-hint">${isOpen ? '收起 ▲' : '要領 ▼'}</span>
+          </div>
+        </div>
+        ${showCheck?`<div class="ex-check-col" onclick="toggleCheck(${i});event.stopPropagation()"><div class="check-box ${done?'checked':''}"></div></div>`:''}
+      </div>
+      ${recHtml}
+      ${isOpen?`<div class="ex-cue">💡 ${ex.cue}</div>`:''}
+      ${trendHtml}
+      ${quickLogHtml}
+      ${setTrackerHtml}
+    </div>`;
+  }).join('');
+}
+
+// 4. 訓練進度條 + header
+function renderWorkoutHeader(td, done, total, pct) {
+  const allDone = done === total && total > 0;
+  return `
+    <div class="workout-header">
+      <div class="workout-title-row">
+        <span class="label">今日</span>
+        <span class="workout-day-title">${td.title}</span>
+      </div>
+      ${allDone ? `<span class="done-badge">✓ 完成！</span>` : ''}
+    </div>
+    <div id="progress-bar-wrap"><div id="progress-bar" style="width:${pct}%"></div></div>
+    <div class="today-hint">點擊動作展開要領，勾選記錄完成 ✓</div>`;
+}
+
+// 5. 主函式：組裝各區塊
+function renderToday() {
+  const idx = getTodayDayIdx(), td = getTodayDay();
+  const el = document.getElementById('today-section');
+  const recIdx = getRecommendedDayIdx();
+
+  const switcher = renderDaySwitcher(idx, recIdx);
+
+  if (!td) {
+    el.innerHTML = switcher + renderRestDay();
+    return;
+  }
+
+  const rec = getOrGenerateRecommend(idx);
+  const exToShow = rec ? rec.exercises : td.ex;
+  const total = exToShow.length;
+  const done = exToShow.filter((_,i) => dayChecked[i]).length;
+  const pct = total ? (done/total*100).toFixed(0) : 0;
+
+  // 把推薦的動作清單存到 window，讓 toggleCheck 可以拿到
+  window._todayExList = exToShow;
+
+  el.innerHTML = switcher
+    + renderWorkoutHeader(td, done, total, pct)
+    + renderRecommendBanner(rec)
+    + `<div class="card">
+        <div class="ex-note">✦ ${rec ? rec.note : td.note}</div>
+        ${renderExListWithRec(exToShow, rec, 'today', true)}
+      </div>`
+    + renderWeightCard();
+}
+
+function renderExList(exercises, prefix, showCheck) {
+  return exercises.map((ex,i) => {
+    const k = `${prefix}-${i}`, isOpen = openCues[k], done = showCheck && dayChecked[i];
+    const lastLog = trainingLogs[ex.zh]?.[0];
+    const lastLogStr = lastLog ? `上次 ${lastLog.w}lb × ${lastLog.r}下` : null;
+    const setsCount2 = parseSetsCount(ex.sets);
+    const doneSets2 = (daySetsDone[`${prefix}-${i}`] || []);
+    const setTrackerHtml2 = `<div class="set-tracker">
+      ${Array.from({length:setsCount2},(_,si)=>`
+        <div class="set-dot ${doneSets2[si]?'done':si===doneSets2.filter(Boolean).length?'active':''}"
+             onclick="toggleSet('${prefix}',${i},${si},${setsCount2});event.stopPropagation()">
+          ${doneSets2[si]?'✓':si+1}
+        </div>`).join('')}
+      <span class="set-label">${doneSets2.filter(Boolean).length}/${setsCount2} 組</span>
+    </div>`;
+    const showQuickLog = showCheck && pendingLogIdx === i && dayChecked[i];
+    const nextSuggest2 = showQuickLog ? calcNextWeight(ex.zh) : null;
+    const trendHtml2 = showQuickLog ? renderExTrendChart(ex.zh) : '';
+    const quickLogHtml2 = showQuickLog ? `
+      <div class="quick-log">
+        ${lastLog ? `<button class="quick-log-same" onclick="sameAsLast(${i})">↩ 同上次：${lastLog.w}lb × ${lastLog.r}下</button>` : ''}
+        ${nextSuggest2 ? `<div class="quick-log-suggest">💡 建議：${nextSuggest2.w}lb — ${nextSuggest2.reason}</div>` : ''}
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <div class="quick-log-field">
+            <span class="quick-log-label">重量 LB</span>
+            <input id="ql-w" class="quick-log-inp" type="number" inputmode="decimal" placeholder="${lastLog ? lastLog.w : '0'}" step="0.5" min="0">
+          </div>
+          <div class="quick-log-field" style="max-width:80px">
+            <span class="quick-log-label">次數</span>
+            <input id="ql-r" class="quick-log-inp" type="number" inputmode="numeric" placeholder="${lastLog ? lastLog.r : '0'}" min="1">
+          </div>
+          <button class="quick-log-save" onclick="saveQuickLog(${i})">記錄</button>
+          <button class="quick-log-skip" onclick="skipQuickLog(${i})">略過</button>
+        </div>
+      </div>` : '';
+
+    return `<div class="ex-item" id="exitem-${k}">
+      <div class="ex-row">
+        <div class="ex-main" onclick="toggleCue('${k}')">
+          <div class="ex-top">
+            <span class="ex-num ${done?'done':''}">${i+1}</span>
+            <span class="ex-name ${done?'done':''}">${ex.zh}</span>
+            <span class="ex-sets">${ex.sets}</span>
+          </div>
+          <div class="ex-bottom">
+            <span class="ex-en">${ex.en}</span>
+            ${lastLogStr?`<span class="ex-last-log">${lastLogStr}</span>`:''}
+            <span class="ex-expand-hint">${isOpen ? '收起 ▲' : '要領 ▼'}</span>
+          </div>
+        </div>
+        ${showCheck?`<div class="ex-check-col" onclick="toggleCheck(${i});event.stopPropagation()"><div class="check-box ${done?'checked':''}"></div></div>`:''}
+      </div>
+      ${isOpen?`<div class="ex-cue">💡 ${ex.cue}</div>`:''}
+      ${trendHtml2}
+      ${quickLogHtml2}
+      ${setTrackerHtml2}
+    </div>`;
+  }).join('');
+}
+
+// ── 1. SET TRACKER ────────────────────────────────────────────────────
+function parseSetsCount(setsStr) {
+  if (!setsStr) return 3;
+  const m = setsStr.match(/^(\d+)/);
+  return m ? Math.min(parseInt(m[1]), 6) : 3;
+}
+
+function saveSetsDone() {
+  const safeDate = getTodayKey().replace(/\//g,'-');
+  ls_set(STORAGE_KEYS.setsDone(currentUser, safeDate), daySetsDone);
+}
+
+function toggleSet(prefix, exIdx, setIdx, totalSets) {
+  const key = `${prefix}-${exIdx}`;
+  if (!daySetsDone[key]) daySetsDone[key] = Array(totalSets).fill(false);
+  const wasDone = daySetsDone[key][setIdx];
+  daySetsDone[key][setIdx] = !wasDone;
+
+  const doneSetsCount = daySetsDone[key].filter(Boolean).length;
+  const allDone = daySetsDone[key].every(Boolean);
+
+  if (!wasDone) {
+    // 剛完成這組 → 馬上啟動組間休息計時器
+    if (allDone) {
+      // 最後一組完成
+      dayChecked[exIdx] = true;
+      saveChecked();
+      const exList = window._todayExList || [];
+      if (exList.length > 0 && exList.every((_,j) => dayChecked[j])) {
+        saveLastTraining(getTodayDayIdx());
+        updateStreak();
+        miniTimerClose();
+        if (navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+        renderToday(); renderHeroBanner();
+        setTimeout(() => document.getElementById('celebrate').classList.add('show'), 300);
+        return;
+      } else {
+        // 這個動作結束，下個動作要準備
+        miniTimerStart(timerDuration, '動作完成，準備下一個');
+      }
+    } else {
+      // 中途組
+      miniTimerStart(timerDuration, `第 ${doneSetsCount} 組完成，休息一下`);
+    }
+    if (navigator.vibrate) navigator.vibrate(40);
+  } else if (!allDone && dayChecked[exIdx]) {
+    dayChecked[exIdx] = false;
+    saveChecked();
+  }
+
+  saveSetsDone();
+  renderToday(); renderHeroBanner();
+}
+
+// ── 2. WORKOUT SUMMARY ────────────────────────────────────────────────
+function closeCelebrate(goToLog) {
+  document.getElementById('celebrate').classList.remove('show');
+  if (goToLog) { switchTab(0); return; }
+  showWorkoutSummary();
+}
+
+function showWorkoutSummary() {
+  const exList = window._todayExList || [];
+  const td = getTodayDay();
+  if (!td || !exList.length) return;
+  let totalSets = 0, totalVolume = 0;
+  const exRows = exList.map(ex => {
+    const logs = trainingLogs[ex.zh] || [];
+    const last = logs[0], prev = logs[1];
+    const sets = parseSetsCount(ex.sets);
+    totalSets += sets;
+    let volHtml = '';
+    if (last) {
+      const vol = parseFloat(last.w) * parseInt(last.r) * sets;
+      totalVolume += vol;
+      const prevVol = prev ? parseFloat(prev.w) * parseInt(prev.r) * sets : null;
+      const diff = prevVol ? ((vol - prevVol) / prevVol * 100).toFixed(0) : null;
+      volHtml = `<div class="summary-ex-vol">${last.w}lb × ${last.r}下 × ${sets}組</div>
+        ${diff!==null?`<div class="summary-vs">${parseFloat(diff)>=0?'↑':'↓'} vs 上次 ${Math.abs(diff)}%</div>`:'<div class="summary-vs">首次紀錄</div>'}`;
+    } else {
+      volHtml = `<div class="summary-ex-vol">${ex.sets}</div><div class="summary-vs">無日誌紀錄</div>`;
+    }
+    return `<div class="summary-ex-row"><div><div class="summary-ex-name">${ex.zh}</div>${volHtml}</div></div>`;
+  });
+  const streak = calcStreak();
+  document.getElementById('sum-title').textContent = `${td.title} 完成！`;
+  document.getElementById('sum-sub').textContent = new Date().toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'});
+  document.getElementById('sum-stats').innerHTML = `
+    <div class="summary-card"><div class="summary-val">${exList.length}</div><div class="summary-lab">完成動作</div></div>
+    <div class="summary-card"><div class="summary-val">${totalSets}</div><div class="summary-lab">總組數</div></div>
+    <div class="summary-card"><div class="summary-val">${totalVolume>0?(totalVolume/1000).toFixed(1)+'t':'—'}</div><div class="summary-lab">訓練量</div></div>
+    <div class="summary-card"><div class="summary-val">${streak}🔥</div><div class="summary-lab">連續天數</div></div>`;
+  document.getElementById('sum-ex-list').innerHTML = exRows.join('');
+  document.getElementById('workout-summary').classList.add('show');
+}
+
+function closeSummary(goToWeight) {
+  document.getElementById('workout-summary').classList.remove('show');
+  if (goToWeight) switchTab(0);
+}
+
+// ── 3. STREAK ─────────────────────────────────────────────────────────
+function calcStreak() {
+  return (ls(STORAGE_KEYS.streak(currentUser), { streak:0, lastDate:'' }).streak) || 0;
+}
+
+function updateStreak() {
+  const today = getTodayKey();
+  const data = ls(STORAGE_KEYS.streak(currentUser), { streak:0, lastDate:'' });
+  if (data.lastDate === today) return;
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yd = yesterday.toLocaleDateString('zh-TW');
+  const newStreak = (data.lastDate === yd) ? data.streak + 1 : 1;
+  ls_set(STORAGE_KEYS.streak(currentUser), { streak: newStreak, lastDate: today });
+  renderStreak();
+}
+
+function renderStreak() {
+  const el = document.getElementById('hero-streak');
+  if (el) el.textContent = calcStreak();
+}
+
+// ── CUSTOM FOODS ──────────────────────────────────────────────────────
+function saveCustomFoods() {
+  ls_set(STORAGE_KEYS.customFoods(currentUser), customFoods);
+}
+
+function addCustomFood() {
+  const name = document.getElementById('cf-name').value.trim();
+  const cal = parseInt(document.getElementById('cf-cal').value) || 0;
+  const pro = parseInt(document.getElementById('cf-pro').value) || 0;
+  if (!name || (!cal && !pro)) return;
+  customFoods.push({ name, cal, pro });
+  saveCustomFoods();
+  document.getElementById('cf-name').value = '';
+  document.getElementById('cf-cal').value = '';
+  document.getElementById('cf-pro').value = '';
+  renderCustomFoods();
+  renderQuickDiet();
+}
+
+function deleteCustomFood(idx) {
+  customFoods.splice(idx, 1);
+  saveCustomFoods();
+  renderCustomFoods();
+  renderQuickDiet();
+}
+
+function renderCustomFoods() {
+  const el = document.getElementById('custom-food-grid');
+  if (!el) return;
+  if (!customFoods.length) {
+    el.innerHTML = `<div class="custom-food-empty" style="grid-column:1/-1">尚無常駐食物，在下方新增 ↓</div>`;
+    return;
+  }
+  el.innerHTML = customFoods.map((f, i) => `
+    <div class="custom-food-btn" onclick="quickDietAdd(${f.cal},${f.pro},'${f.name}')">
+      <div class="custom-food-btn-left">
+        <div class="custom-food-btn-name">${f.name}</div>
+        <div class="custom-food-btn-info">${f.cal}kcal / ${f.pro}g蛋白</div>
+      </div>
+      <span class="custom-food-del" onclick="event.stopPropagation();deleteCustomFood(${i})">✕</span>
+    </div>`).join('');
+}
+
+function renderQuickDiet() {
+  // 同步更新今日 tab 的快速按鈕（取前 4 個 customFoods，不夠則用預設）
+  const defaults = [
+    {cal:165,pro:31,name:'🍗 雞胸肉'},
+    {cal:120,pro:24,name:'🥤 乳清蛋白'},
+    {cal:280,pro:6, name:'🍚 白米飯'},
+    {cal:140,pro:13,name:'🥚 水煮蛋'},
+  ];
+  const items = customFoods.length
+    ? customFoods.slice(0, 4)
+    : defaults;
+  const row = document.querySelector('.quick-diet-row');
+  if (!row) return;
+  row.innerHTML = items.map(f => `
+    <div class="quick-diet-btn" onclick="quickDietAdd(${f.cal},${f.pro},'${f.name}')">
+      <div class="qd-name">${f.name}</div>
+      <div class="qd-info">${f.cal}kcal/${f.pro}g</div>
+    </div>`).join('');
+}
+
+// ── 4. QUICK DIET ─────────────────────────────────────────────────────
+function quickDietAdd(cal, pro, name) {
+  todayCalories += cal; todayProtein += pro;
+  if (todayFoodLog.length < 50) todayFoodLog.push({ name, cal, pro });
+  if (navigator.vibrate) navigator.vibrate(40);
+  saveDietData();
+  const ew = document.querySelector('.quick-diet-wrap');
+  if (ew) { ew.style.opacity='0.4'; setTimeout(()=>ew.style.opacity='1',250); }
+}
+
+// ── 5. WATER TRACKER ──────────────────────────────────────────────────
+const WATER_GOAL = 2500;
+
+function addWater(ml) {
+  todayWater = Math.min(todayWater + ml, WATER_GOAL * 2);
+  ls_set(STORAGE_KEYS.water(currentUser, getTodayKey().replace(/\//g,'-')), todayWater);
+  if (navigator.vibrate) navigator.vibrate(30);
+  renderWater();
+}
+
+function resetWater() {
+  todayWater = 0;
+  ls_set(STORAGE_KEYS.water(currentUser, getTodayKey().replace(/\//g,'-')), 0);
+  renderWater();
+}
+
+function renderWater() {
+  const numEl = document.getElementById('water-num');
+  const barEl = document.getElementById('water-bar');
+  if (!numEl) return;
+  numEl.textContent = todayWater;
+  const pct = Math.min(100, (todayWater / WATER_GOAL) * 100);
+  if (barEl) {
+    barEl.style.width = pct + '%';
+    barEl.style.background = todayWater >= WATER_GOAL ? '#c8f537' : '#537fc8';
+  }
+}
+
+function toggleCheck(i) {
+  const wasDone = dayChecked[i];
+  dayChecked[i] = !dayChecked[i];
+  saveChecked();
+
+  if (!wasDone && dayChecked[i]) {
+    // 剛勾選：跳出記錄面板
+    pendingLogIdx = i;
+    renderToday();
+    renderHeroBanner();
+    // 自動 focus 體重欄
+    setTimeout(() => {
+      const el = document.getElementById('ql-w');
+      if (el) el.focus();
+    }, 100);
+  } else {
+    // 取消勾選
+    pendingLogIdx = null;
+    renderToday();
+    renderHeroBanner();
+  }
+}
+
+function sameAsLast(i) {
+  const exList = window._todayExList || [];
+  const ex = exList[i];
+  if (!ex) return;
+  const last = trainingLogs[ex.zh]?.[0];
+  if (!last) return;
+  pendingLogIdx = null;
+  if (!trainingLogs[ex.zh]) trainingLogs[ex.zh] = [];
+  trainingLogs[ex.zh].unshift({ date: getTodayKey(), w: last.w, r: last.r });
+  trainingLogs[ex.zh] = trainingLogs[ex.zh].slice(0, 30);
+  ls_set(STORAGE_KEYS.logs(currentUser), trainingLogs);
+  _finishQuickLog(i);
+}
+
+function saveQuickLog(i) {
+  const wEl = document.getElementById('ql-w');
+  const rEl = document.getElementById('ql-r');
+  const wRaw = parseFloat(wEl ? wEl.value : '');
+  const rRaw = parseInt(rEl ? rEl.value : '');
+  const exList = window._todayExList || [];
+  const ex = exList[i];
+
+  if (ex && !isNaN(wRaw) && !isNaN(rRaw) && wRaw > 0 && rRaw > 0) {
+    const wasPR = isPR(ex.zh, wRaw);
+    if (!trainingLogs[ex.zh]) trainingLogs[ex.zh] = [];
+    trainingLogs[ex.zh].unshift({ date: getTodayKey(), w: wRaw.toFixed(1), r: rRaw, pr: wasPR });
+    trainingLogs[ex.zh] = trainingLogs[ex.zh].slice(0, 30);
+    ls_set(STORAGE_KEYS.logs(currentUser), trainingLogs);
+    render1RM();
+    if (wasPR && navigator.vibrate) navigator.vibrate([100,50,100,50,300]);
+  }
+
+  pendingLogIdx = null;
+  _finishQuickLog(i);
+}
+
+function _finishQuickLog(i) {
+  const exList = window._todayExList || [];
+  const idx = getTodayDayIdx();
+  if (exList.length > 0 && exList.every((_,j) => dayChecked[j])) {
+    saveLastTraining(idx);
+    updateStreak();
+    if (navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+    renderToday(); renderHeroBanner();
+    setTimeout(() => document.getElementById('celebrate').classList.add('show'), 300);
+    miniTimerClose();
+  } else {
+    miniTimerStart(timerDuration);
+    renderToday(); renderHeroBanner();
+  }
+}
+
+function skipQuickLog(i) {
+  pendingLogIdx = null;
+  _finishQuickLog(i);
+}
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.8);
+  } catch(e) {}
+}
+
+// ── 背景通知 ──────────────────────────────────────────────────────────
+function requestNotificationPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function sendTimerNotification(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  // 如果 app 在前景，不需要通知
+  if (!document.hidden) return;
+  try {
+    new Notification(title, {
+      body: body,
+      icon: 'icon-192.png',
+      badge: 'icon-192.png',
+      tag: 'fitness-timer',      // 同 tag 的通知會覆蓋，不疊加
+      renotify: true,
+      vibrate: [200, 100, 200],
+      silent: false
+    });
+  } catch(e) {
+    // iOS Safari 等環境可能不支援，靜默失敗
+  }
+}
+
+// ── 功能3：動作歷史趨勢折線圖 ────────────────────────────────────────
+function renderExTrendChart(exName) {
+  const logs = (trainingLogs[exName] || []).slice(0, 8).reverse();
+  if (logs.length < 2) {
+    return logs.length === 1
+      ? `<div class="ex-trend-wrap"><div class="ex-trend-empty">只有 1 筆紀錄，再記一次就能看趨勢</div></div>`
+      : `<div class="ex-trend-wrap"><div class="ex-trend-empty">尚無歷史紀錄</div></div>`;
+  }
+  const W = 280, H = 54, PAD = 20;
+  const weights = logs.map(l => parseFloat(l.w));
+  const vols = logs.map(l => parseFloat(l.w) * parseInt(l.r));
+  const minW = Math.min(...weights), maxW = Math.max(...weights);
+  const minV = Math.min(...vols), maxV = Math.max(...vols);
+  const rangeW = maxW - minW || 1, rangeV = maxV - minV || 1;
+  const xOf = i => PAD + (i / (logs.length - 1)) * (W - PAD * 2);
+  const yOfW = v => H - 8 - ((v - minW) / rangeW) * (H - 20);
+  const yOfV = v => H - 8 - ((v - minV) / rangeV) * (H - 20);
+  const wPath = weights.map((v, i) => `${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOfW(v).toFixed(1)}`).join(' ');
+  const vPath = vols.map((v, i) => `${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOfV(v).toFixed(1)}`).join(' ');
+  const trend = weights[weights.length-1] - weights[0];
+  const trendStr = trend > 0 ? `↑ +${trend.toFixed(1)}lb` : trend < 0 ? `↓ ${trend.toFixed(1)}lb` : '持平';
+  const trendColor = trend > 0 ? '#c8f537' : trend < 0 ? '#ff6b6b' : '#555';
+  const dots = weights.map((v, i) => `
+    <circle cx="${xOf(i).toFixed(1)}" cy="${yOfW(v).toFixed(1)}" r="2.5" fill="#c8f537"/>
+    ${i === logs.length-1 ? `<text x="${xOf(i).toFixed(1)}" y="${(yOfW(v)-7).toFixed(1)}" text-anchor="middle" fill="#c8f537" font-size="8">${v}lb</text>` : ''}
+    <text x="${xOf(i).toFixed(1)}" y="${(H+2).toFixed(1)}" text-anchor="middle" fill="#333" font-size="7" dominant-baseline="hanging">${logs[i].date.slice(5)}</text>`).join('');
+  return `<div class="ex-trend-wrap">
+    <div class="ex-trend-title">
+      <span>📈 重量趨勢（近 ${logs.length} 次）</span>
+      <span style="color:${trendColor}">${trendStr}</span>
+    </div>
+    <svg class="ex-trend-svg" viewBox="0 0 ${W} ${H+14}" height="${H+14}">
+      <path d="${vPath}" fill="none" stroke="#537fc8" stroke-width="1" stroke-dasharray="3,2" opacity="0.4"/>
+      <path d="${wPath}" fill="none" stroke="#c8f537" stroke-width="1.5" stroke-linejoin="round"/>
+      ${dots}
+    </svg>
+  </div>`;
+}
+
+// ── 功能4：本週飲食總結 ───────────────────────────────────────────────
+function renderWeekDietSummary() {
+  const el = document.getElementById('week-diet-summary');
+  if (!el || !currentUser) return;
+  const u = USERS[currentUser];
+  const now = new Date();
+  const dow = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
+  monday.setHours(0, 0, 0, 0);
+  const dayNames = ['一','二','三','四','五','六','日'];
+  let totalCal = 0, totalPro = 0, dayCount = 0;
+  const dayData = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    if (d > now) { dayData.push(null); continue; }
+    const dateKey = d.toLocaleDateString('zh-TW').replace(/\//g, '-');
+    const diet = ls(STORAGE_KEYS.diet(currentUser, dateKey), null);
+    if (diet && (diet.calories > 0 || diet.protein > 0)) {
+      totalCal += diet.calories || 0;
+      totalPro += diet.protein || 0;
+      dayCount++;
+      dayData.push({ cal: diet.calories || 0, pro: diet.protein || 0 });
+    } else {
+      dayData.push({ cal: 0, pro: 0 });
+    }
+  }
+  if (dayCount === 0) {
+    el.innerHTML = `<div class="week-diet-wrap"><div style="font-size:11px;color:#333;text-align:center;padding:8px 0">本週尚無飲食紀錄</div></div>`;
+    return;
+  }
+  const avgCal = Math.round(totalCal / dayCount);
+  const avgPro = Math.round(totalPro / dayCount);
+  const proteinDays = dayData.filter(d => d && d.pro >= u.proteinTarget).length;
+  const maxCal = Math.max(...dayData.filter(Boolean).map(d => d.cal), u.kcalTarget);
+  const todayIdx = dow === 0 ? 6 : dow - 1;
+  const bars = dayData.map((d, i) => {
+    if (!d) return `<div class="week-diet-bar-item"><span class="week-diet-day">${dayNames[i]}</span><div class="week-diet-bar-bg"><div class="week-diet-bar-fill" style="width:0%"></div></div><span class="week-diet-bar-val" style="color:#222">—</span></div>`;
+    const calPct = maxCal ? Math.min(100, (d.cal / maxCal) * 100).toFixed(0) : 0;
+    const calColor = d.cal > u.kcalTarget ? '#ff4444' : '#c8f537';
+    const isToday = i === todayIdx;
+    return `<div class="week-diet-bar-item">
+      <span class="week-diet-day" style="${isToday?'color:#c8f537;font-weight:700':''}">${dayNames[i]}</span>
+      <div class="week-diet-bar-bg"><div class="week-diet-bar-fill" style="width:${calPct}%;background:${calColor}"></div></div>
+      <span class="week-diet-bar-val">${d.cal?d.cal+'':''}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="week-diet-wrap">
+    <div class="week-diet-title">本週（${dayCount} 天有記錄）</div>
+    <div class="week-diet-grid">
+      <div class="week-diet-card"><div class="week-diet-val">${avgCal}</div><div class="week-diet-lab">均熱量 kcal</div></div>
+      <div class="week-diet-card"><div class="week-diet-val">${avgPro}g</div><div class="week-diet-lab">均蛋白質</div></div>
+      <div class="week-diet-card"><div class="week-diet-val" style="color:${proteinDays>=5?'#c8f537':'#f5a623'}">${proteinDays}/7</div><div class="week-diet-lab">蛋白達標天</div></div>
+    </div>
+    <div class="week-diet-bar-row">${bars}</div>
+  </div>`;
+}
+
+// ── Training ──────────────────────────────────────────────────────────
+// ── Diet ──────────────────────────────────────────────────────────────
+function updateDietDisplay() {
+  const u = USERS[currentUser];
+  document.getElementById('today-calories-num').innerText = todayCalories;
+  document.getElementById('today-protein-num').innerText = todayProtein;
+  document.getElementById('diet-kcal-target').innerText = `kcal / ${u.kcalTarget.toLocaleString()}`;
+  document.getElementById('diet-protein-target').innerText = `g / ${u.proteinTarget}g`;
+  const kp = Math.min(100,(todayCalories/u.kcalTarget)*100).toFixed(1);
+  const pp = Math.min(100,(todayProtein/u.proteinTarget)*100).toFixed(1);
+  const kb = document.getElementById('kcal-bar'), pb = document.getElementById('protein-bar');
+  kb.style.width = kp+'%'; kb.style.background = todayCalories>u.kcalTarget?RD:A;
+  pb.style.width = pp+'%'; pb.style.background = todayProtein>=u.proteinTarget?A:A2;
+  updateDietGoalToast(u);
+  renderFoodLog();
+}
+
+function updateDietGoalToast(u) {
+  const toast = document.getElementById('diet-goal-toast');
+  if (!toast) return;
+  const kcalDone = todayCalories >= u.kcalTarget;
+  const proteinDone = todayProtein >= u.proteinTarget;
+  const kcalOver = todayCalories > u.kcalTarget * 1.1; // 超過 10%
+
+  if (kcalOver) {
+    toast.className = 'diet-goal-toast warn';
+    toast.innerHTML = `⚠️ 熱量已超標 ${(todayCalories - u.kcalTarget).toLocaleString()} kcal，注意飲食`;
+  } else if (kcalDone && proteinDone) {
+    toast.className = 'diet-goal-toast';
+    toast.innerHTML = `🎯 今日目標達成！熱量 ${todayCalories} kcal · 蛋白質 ${todayProtein}g 都到位了`;
+    if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+  } else if (proteinDone && !kcalDone) {
+    toast.className = 'diet-goal-toast';
+    toast.innerHTML = `✅ 蛋白質達標 ${todayProtein}g！還差 ${u.kcalTarget - todayCalories} kcal`;
+  } else if (kcalDone && !proteinDone) {
+    toast.className = 'diet-goal-toast';
+    toast.innerHTML = `✅ 熱量達標！蛋白質還差 ${u.proteinTarget - todayProtein}g`;
+  } else if (todayCalories > 0 || todayProtein > 0) {
+    // 有記錄但還沒達標：顯示進度提示
+    const kcalLeft = u.kcalTarget - todayCalories;
+    const proLeft = u.proteinTarget - todayProtein;
+    toast.className = 'diet-goal-toast';
+    toast.innerHTML = `📊 還差 ${kcalLeft > 0 ? kcalLeft + ' kcal' : ''}${kcalLeft > 0 && proLeft > 0 ? ' · ' : ''}${proLeft > 0 ? proLeft + 'g 蛋白質' : ''}`;
+  } else {
+    toast.className = 'diet-goal-toast hidden';
+  }
+}
+
+function dietAdd(cal, pro, name, btn) {
+  todayCalories += cal; todayProtein += pro;
+  if (todayFoodLog.length >= 50) return; // 每天最多 50 筆
+  todayFoodLog.push({ name: name||'自訂', cal, pro });
+  if (navigator.vibrate) navigator.vibrate(40);
+  if (btn) { btn.classList.add('flash'); setTimeout(()=>btn.classList.remove('flash'),300); }
+  saveDietData();
+}
+
+function removeFoodLog(idx) {
+  const item = todayFoodLog[idx]; if (!item) return;
+  todayCalories = Math.max(0, todayCalories - item.cal);
+  todayProtein = Math.max(0, todayProtein - item.pro);
+  todayFoodLog.splice(idx, 1);
+  saveDietData();
+}
+
+function renderFoodLog() {
+  const wrap = document.getElementById('food-log-wrap');
+  const list = document.getElementById('food-log-list');
+  if (!todayFoodLog.length) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = todayFoodLog.map((item,i) => `
+    <div class="food-log-item">
+      <span class="food-log-name">${item.name}</span>
+      <span class="food-log-kcal">${item.cal} kcal</span>
+      <span class="food-log-pro">${item.pro}g</span>
+      <span class="food-log-del" onclick="removeFoodLog(${i})">✕</span>
+    </div>`).join('');
+}
+
+function saveCustomDiet() {
+  const c = document.getElementById('inp-cal'), p = document.getElementById('inp-pro');
+  const ac = parseInt(c.value)||0, ap = parseInt(p.value)||0;
+  if (!ac && !ap) return;
+  todayCalories += ac; todayProtein += ap;
+  if (todayFoodLog.length >= 50) return;
+  todayFoodLog.push({ name:'✍️ 自訂', cal:ac, pro:ap });
+  c.value=''; p.value=''; document.activeElement.blur();
+  if (navigator.vibrate) navigator.vibrate(40);
+  saveDietData();
+}
+
+// 清理超過 30 天的舊 diet key（避免 localStorage 無限增長）
+function cleanOldDietKeys() {
+  const hi = ls(STORAGE_KEYS.dietIndex(currentUser), []);
+  if (hi.length <= 30) return;
+  // 保留最近 30 天，刪掉更舊的
+  const toKeep = hi.slice(0, 30);
+  const toDelete = hi.slice(30);
+  toDelete.forEach(date => {
+    try { localStorage.removeItem(STORAGE_KEYS.diet(currentUser, date)); } catch {}
+  });
+  ls_set(STORAGE_KEYS.dietIndex(currentUser), toKeep);
+}
+
+function saveDietData() {
+  const safeDate = getTodayKey().replace(/\//g,'-');
+  ls_set(dietDayKey(), { calories:todayCalories, protein:todayProtein, log:todayFoodLog });
+  // 更新歷史 index
+  let hi = ls(STORAGE_KEYS.dietIndex(currentUser), []);
+  if (!hi.includes(safeDate)) {
+    hi = [safeDate, ...hi].slice(0, 30);
+    ls_set(STORAGE_KEYS.dietIndex(currentUser), hi);
+  }
+  cleanOldDietKeys();
+  updateDietDisplay();
+  renderWeekDietSummary();
+}
+
+function renderDietHistory() {
+  const el = document.getElementById('diet-history-list'); if (!el) return;
+  const safeToday = getTodayKey().replace(/\//g,'-');
+  const hi = ls(STORAGE_KEYS.dietIndex(currentUser), []);
+  const past = hi.filter(d => d !== safeToday);
+  if (!past.length) {
+    el.innerHTML = `<div class="empty-state">還沒有歷史紀錄</div>`;
+    return;
+  }
+  const u = USERS[currentUser];
+  el.innerHTML = past.map(date => {
+    const data = ls(STORAGE_KEYS.diet(currentUser, date), { calories:0, protein:0, log:[] });
+    const isOpen = openDietHistory[date];
+    const kp = Math.min(100,(data.calories/u.kcalTarget)*100).toFixed(0);
+    const pp = Math.min(100,(data.protein/u.proteinTarget)*100).toFixed(0);
+    const kc = data.calories > u.kcalTarget ? RD : A;
+    return `<div class="log-section">
+      <div class="log-header" onclick="toggleDietHistory('${date}')">
+        <div>
+          <div class="log-date">${date}</div>
+          <div class="log-date-sub">
+            <span style="color:${kc}">${data.calories} kcal</span>
+            <span class="dot-sep">·</span>
+            <span style="color:var(--a)">${data.protein}g 蛋白質</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="hist-arrow">${isOpen?'▲':'▼'}</div>
+          <div class="diet-hist-bar-wrap">
+            <div class="diet-hist-bar-row"><div class="diet-hist-bar" style="width:${kp}%;background:${kc}"></div></div>
+            <div class="diet-hist-bar-row"><div class="diet-hist-bar" style="width:${pp}%;background:${A2}"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="log-body ${isOpen?'open':''}">
+        ${data.log&&data.log.length ? data.log.map(item=>`
+          <div class="food-log-item">
+            <span class="food-log-name">${item.name}</span>
+            <span class="food-log-kcal">${item.cal} kcal</span>
+            <span class="food-log-pro">${item.pro}g</span>
+          </div>`).join('') : `<div class="no-record">沒有詳細紀錄</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDietHistory(date) { openDietHistory[date]=!openDietHistory[date]; renderDietHistory(); }
+
+function resetDietTracker() {
+  // 使用 inline confirm UI，不用原生 confirm()
+  todayCalories=0; todayProtein=0; todayFoodLog=[];
+  toggleConfirmInline(false);
+  saveDietData();
+}
+
+// ── Progress ──────────────────────────────────────────────────────────
+// diff badge helper：正數紅色（增重），負數綠色（減重）
+function diffBadge(d, unit='lb') {
+  if (d === null) return '';
+  const val = parseFloat(d);
+  const cls = val > 0 ? 'diff-pos' : 'diff-neg';
+  const sign = val > 0 ? '+' : '';
+  return `<span class="${cls}">${sign}${d}${unit ? ' '+unit : ''}</span>`;
+}
+
+// 1. 最新體重/體脂卡片
+function renderProgStats() {
+  const latest = progressEntries[0], prev2 = progressEntries[1];
+  const el = document.getElementById('prog-stats');
+  if (!latest) { el.innerHTML = ''; return; }
+  const wd = prev2 ? (parseFloat(latest.w) - parseFloat(prev2.w)).toFixed(1) : null;
+  const targetW = parseFloat(ls(STORAGE_KEYS.targetWeight(currentUser), 0));
+
+  // 目標倒數計算
+  let targetHtml = '';
+  if (targetW > 0 && progressEntries.length >= 2) {
+    const cur = parseFloat(latest.w);
+    const diff = (cur - targetW).toFixed(1);
+    const absDiff = Math.abs(parseFloat(diff));
+    const isGoalReached = absDiff < 0.5;
+
+    if (isGoalReached) {
+      targetHtml = `<div class="target-card target-done">🎯 已達目標 ${targetW}lb！</div>`;
+    } else {
+      // 用最近 4 筆算平均週速
+      const recent = progressEntries.slice(0, Math.min(4, progressEntries.length));
+      const oldest = recent[recent.length - 1];
+      const weeklyRate = recent.length >= 2
+        ? (parseFloat(oldest.w) - parseFloat(latest.w)) / (recent.length - 1)
+        : null;
+      let etaHtml = '';
+      if (weeklyRate && Math.abs(weeklyRate) > 0.05) {
+        const weeksLeft = Math.ceil(absDiff / Math.abs(weeklyRate));
+        const direction = parseFloat(diff) > 0 ? '減' : '增';
+        etaHtml = `<span class="target-eta">照目前速度約 ${weeksLeft} 週${direction}到目標</span>`;
+      }
+      const isLosing = parseFloat(diff) > 0;
+      targetHtml = `<div class="target-card">
+        <div class="target-label">距目標 ${targetW}lb</div>
+        <div class="target-diff ${isLosing ? 'losing' : 'gaining'}">${isLosing ? '-' : '+'}${absDiff} lb</div>
+        ${etaHtml}
+      </div>`;
+    }
+  }
+
+  el.innerHTML = `<div class="prog-grid">
+    <div class="prog-card">
+      <div class="prog-val">${latest.w}<span class="prog-unit-sm">lb</span></div>
+      <div class="prog-lab">最新體重</div>
+      ${diffBadge(wd)}
+    </div>
+    ${latest.f ? `<div class="prog-card">
+      <div class="prog-val">${latest.f}<span class="prog-unit-sm">%</span></div>
+      <div class="prog-lab">最新體脂</div>
+    </div>` : ''}
+  </div>
+  ${targetHtml}`;
+}
+
+// 2. 體重折線圖顯示/隱藏
+let chartRange = 8; // 預設顯示最近 8 筆
+
+function setChartRange(n) {
+  chartRange = n;
+  document.querySelectorAll('.chart-range-btn').forEach(b => b.classList.remove('active'));
+  const id = n === 0 ? 'cr-0' : n === 20 ? 'cr-20' : 'cr-8';
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  renderWeightChartEnhanced();
+}
+
+function renderProgChart() {
+  const cw = document.getElementById('chart-wrap');
+  if (progressEntries.length >= 2) { cw.style.display = 'block'; renderWeightChartEnhanced(); }
+  else cw.style.display = 'none';
+  render1RM();
+}
+
+// 3. 歷史紀錄列表
+function renderProgList() {
+  const listEl = document.getElementById('prog-list');
+  if (!progressEntries.length) {
+    listEl.innerHTML = `<div class="empty-state">每週量一次體重，記錄進度！</div>`;
+    return;
+  }
+  listEl.innerHTML = `<div class="card">` + progressEntries.map((e, i) => {
+    const p = progressEntries[i+1];
+    const d = p ? (parseFloat(e.w) - parseFloat(p.w)).toFixed(1) : null;
+    return `<div class="log-entry">
+      <div class="prog-list-date">${e.date}</div>
+      <div class="prog-list-row">
+        <span class="prog-list-val">${e.w} lb${e.f ? ` · ${e.f}%` : ''}</span>
+        ${diffBadge(d)}
+        <button class="log-del-btn" onclick="deleteProgress(${i})">✕</button>
+      </div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+// ── 功能2：1RM 估算（Epley 公式）─────────────────────────────────────
+function calc1RM(w, r) {
+  if (r === 1) return parseFloat(w);
+  return parseFloat(w) * (1 + parseInt(r) / 30);
+}
+
+function render1RM() {
+  const el = document.getElementById('orm-wrap');
+  if (!el) return;
+
+  // 找有日誌的動作，計算各動作最佳 1RM（取歷史最高）
+  const results = [];
+  for (const [exName, logs] of Object.entries(trainingLogs)) {
+    if (!logs.length) continue;
+    let best = 0, bestLog = null, prev = 0;
+    logs.forEach((log, i) => {
+      const orm = calc1RM(log.w, log.r);
+      if (orm > best) { best = orm; bestLog = log; }
+      if (i === 1) prev = calc1RM(logs[1].w, logs[1].r);
+    });
+    if (best > 0) results.push({ name: exName, orm: best, prev, log: bestLog });
+  }
+
+  if (!results.length) {
+    el.innerHTML = `<div class="orm-wrap"><div style="font-size:11px;color:#333;text-align:center;padding:6px 0">記錄訓練重量後自動計算</div></div>`;
+    return;
+  }
+
+  // 按 1RM 降序，取前 6 個最重要的動作
+  results.sort((a, b) => b.orm - a.orm);
+  const top = results.slice(0, 6);
+
+  const cards = top.map(r => {
+    const delta = r.prev > 0 ? r.orm - r.prev : 0;
+    const deltaHtml = delta > 0.5
+      ? `<div class="orm-delta orm-up">↑ +${delta.toFixed(1)}</div>`
+      : delta < -0.5
+      ? `<div class="orm-delta orm-down">↓ ${delta.toFixed(1)}</div>`
+      : `<div class="orm-delta orm-neutral">持平</div>`;
+    return `<div class="orm-card">
+      <div class="orm-name">${r.name}</div>
+      <div class="orm-right">
+        <div class="orm-val">${r.orm.toFixed(1)}<span class="orm-unit">lb</span></div>
+        ${deltaHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div class="orm-wrap">
+    <div class="orm-title">
+      <span>💪 理論最大重量（1RM）</span>
+      <span>Epley 公式</span>
+    </div>
+    <div class="orm-grid">${cards}</div>
+  </div>`;
+}
+
+// ── 功能1：體重趨勢圖升級版（加體脂、加預測線）────────────────────────
+function renderWeightChartEnhanced() {
+  const svg = document.getElementById('weight-chart-svg');
+  if (!svg || progressEntries.length < 2) return;
+
+  const pts = chartRange === 0
+    ? [...progressEntries].reverse()
+    : [...progressEntries].reverse().slice(-chartRange);
+
+  const weights = pts.map(e => parseFloat(e.w));
+  const fats = pts.map(e => parseFloat(e.f) || null);
+  const hasFat = fats.some(v => v !== null);
+  const targetW = parseFloat(ls(STORAGE_KEYS.targetWeight(currentUser), 0)) || null;
+
+  const W = 300, H = 80, PAD_L = 6, PAD_R = 6;
+  const allW = [...weights, ...(targetW ? [targetW] : [])];
+  const minW = Math.min(...allW) - 1, maxW = Math.max(...allW) + 1;
+
+  const xOf = i => PAD_L + (i / (pts.length - 1)) * (W - PAD_L - PAD_R);
+  const yOf = v => H - 10 - ((v - minW) / (maxW - minW)) * (H - 20);
+
+  // 線性回歸預測（最後2個點延伸）
+  let predHtml = '';
+  if (pts.length >= 3) {
+    const n = pts.length;
+    const lastX = xOf(n - 1);
+    const slope = (weights[n-1] - weights[n-3]) / 2;
+    const predY1 = yOf(weights[n-1] + slope);
+    const predY2 = yOf(weights[n-1] + slope * 3);
+    const predX2 = Math.min(W - PAD_R + 20, lastX + 40);
+    predHtml = `<line x1="${lastX}" y1="${yOf(weights[n-1])}" x2="${predX2}" y2="${predY2}" stroke="#4a6a00" stroke-width="1" stroke-dasharray="3,2"/>`;
+  }
+
+  // 面積填充
+  const wPath = weights.map((v, i) => `${i===0?'M':'L'}${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(' ');
+  const area = wPath + ` L${xOf(weights.length-1).toFixed(1)},${H} L${xOf(0).toFixed(1)},${H} Z`;
+
+  // 目標線
+  const tyHtml = targetW ? `
+    <line x1="${PAD_L}" y1="${yOf(targetW).toFixed(1)}" x2="${W-PAD_R}" y2="${yOf(targetW).toFixed(1)}" stroke="#f5a623" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+    <text x="${W-PAD_R-2}" y="${(yOf(targetW)-4).toFixed(1)}" text-anchor="end" fill="#f5a623" font-size="7">${targetW}lb</text>` : '';
+
+  // 體重點
+  const dots = weights.map((v, i) => {
+    const isLast = i === weights.length - 1;
+    return `<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(v).toFixed(1)}" r="${isLast?3.5:2}" fill="#c8f537"/>
+    ${isLast ? `<text x="${xOf(i).toFixed(1)}" y="${(yOf(v)-9).toFixed(1)}" text-anchor="middle" fill="#c8f537" font-size="9" font-weight="700">${v}lb</text>` : ''}`;
+  }).join('');
+
+  // 日期標籤（只顯示首尾）
+  const dateLabels = `
+    <text x="${xOf(0).toFixed(1)}" y="${H+2}" text-anchor="middle" fill="#333" font-size="7" dominant-baseline="hanging">${pts[0].date.slice(5)}</text>
+    <text x="${xOf(pts.length-1).toFixed(1)}" y="${H+2}" text-anchor="middle" fill="#444" font-size="7" dominant-baseline="hanging">${pts[pts.length-1].date.slice(5)}</text>`;
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H+14}`);
+  svg.setAttribute('height', H+14);
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="wgv2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#c8f537" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#c8f537" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${area}" fill="url(#wgv2)"/>
+    ${tyHtml}
+    ${predHtml}
+    <path d="${wPath}" fill="none" stroke="#c8f537" stroke-width="2" stroke-linejoin="round"/>
+    ${dots}
+    ${dateLabels}`;
+
+  // 更新 header stats
+  const latest = weights[weights.length - 1];
+  const oldest = weights[0];
+  const totalChange = (latest - oldest).toFixed(1);
+  const u = USERS[currentUser];
+  const heightM = (u.stats.match(/(\d+)CM/i)?.[1] || 170) / 100;
+  const bmi = (latest * 0.453592 / (heightM * heightM)).toFixed(1);
+
+  const statsEl = document.getElementById('wc-chart-stats');
+  if (statsEl) {
+    const changeColor = totalChange < 0 ? '#c8f537' : totalChange > 0 ? '#f5a623' : '#555';
+    statsEl.innerHTML = `
+      <div class="wc-chart-stat">
+        <div class="wc-chart-stat-val" style="color:${changeColor}">${totalChange > 0 ? '+' : ''}${totalChange}lb</div>
+        <div class="wc-chart-stat-lab">期間變化</div>
+      </div>
+      <div class="wc-chart-stat">
+        <div class="wc-chart-stat-val">${bmi}</div>
+        <div class="wc-chart-stat-lab">BMI</div>
+      </div>`;
+  }
+}
+
+// ── PR 判斷 ───────────────────────────────────────────────────────────
+function isPR(exName, w) {
+  const logs = trainingLogs[exName] || [];
+  if (logs.length < 2) return false; // 第一次不算 PR，第二次以後才有比較基準
+  const prevMax = Math.max(...logs.slice(1).map(l => parseFloat(l.w)));
+  return parseFloat(w) > prevMax;
+}
+
+// ── 建議下次重量 ──────────────────────────────────────────────────────
+function calcNextWeight(exName) {
+  const logs = trainingLogs[exName] || [];
+  if (logs.length < 2) return null;
+  const last = logs[0], prev = logs[1];
+  const lastW = parseFloat(last.w), lastR = parseInt(last.r);
+  const prevW = parseFloat(prev.w), prevR = parseInt(prev.r);
+  // 如果上次次數達標（>=目標上限），建議加重 5lb
+  // 如果次數下降，建議維持或減重
+  if (lastW === prevW && lastR >= prevR) {
+    return { w: (lastW + 5).toFixed(1), reason: '上次次數穩定，可以加重了 💪' };
+  } else if (lastW > prevW) {
+    return { w: lastW.toFixed(1), reason: '剛加重，先鞏固這個重量' };
+  } else if (lastR < prevR - 1) {
+    return { w: Math.max(lastW - 5, 5).toFixed(1), reason: '次數下滑，適當減重重新建立' };
+  }
+  return { w: lastW.toFixed(1), reason: '維持上次重量，衝刺次數' };
+}
+
+// ── 訓練熱力圖 ────────────────────────────────────────────────────────
+function renderHeatmap() {
+  const wrap = document.getElementById('heatmap-wrap');
+  if (!wrap) return;
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  // 往回 26 週（半年）
+  const WEEKS = 26;
+  const start = new Date(today);
+  start.setDate(today.getDate() - (WEEKS * 7 - 1));
+  // 對齊到週一
+  const dayOfWeek = start.getDay();
+  start.setDate(start.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+  // 收集有訓練的日期
+  const trainedDates = new Set();
+  for (let u of Object.keys(USERS)) {
+    // 用 checked storage 判斷有打勾的日期
+    const allKeys = Object.keys(localStorage).filter(k => k.includes(`checked_${u}_`));
+    allKeys.forEach(k => {
+      const data = JSON.parse(localStorage.getItem(k) || '{}');
+      if (Object.values(data).some(Boolean)) {
+        const dateStr = k.split(`checked_${u}_`)[1];
+        trainedDates.add(dateStr);
+      }
+    });
+  }
+
+  // 建立 weeks 陣列
+  const weeks = [];
+  let monthLabels = [];
+  let cur = new Date(start);
+  let lastMonth = -1;
+
+  for (let w = 0; w < WEEKS; w++) {
+    const days = [];
+    for (let d = 0; d < 7; d++) {
+      const dateKey = cur.toLocaleDateString('zh-TW').replace(/\//g, '-');
+      const isToday = cur.getTime() === today.getTime();
+      const isFuture = cur > today;
+      const trained = !isFuture && trainedDates.has(dateKey);
+      days.push({ trained, isToday, isFuture });
+
+      if (d === 0) {
+        const m = cur.getMonth();
+        if (m !== lastMonth) { monthLabels.push({ week: w, label: `${m+1}月` }); lastMonth = m; }
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    weeks.push(days);
+  }
+
+  const totalTrained = [...trainedDates].filter(d => {
+    const date = new Date(d.replace(/-/g, '/'));
+    return date >= start && date <= today;
+  }).length;
+
+  const monthHtml = `<div class="heatmap-months" style="display:flex;gap:0;margin-bottom:3px">` +
+    Array.from({length: WEEKS}, (_, wi) => {
+      const ml = monthLabels.find(m => m.week === wi);
+      return `<div style="width:13px;font-size:8px;color:#333;flex-shrink:0">${ml ? ml.label : ''}</div>`;
+    }).join('') + `</div>`;
+
+  const gridHtml = weeks.map(days =>
+    `<div class="heatmap-week">` +
+    days.map(d => `<div class="heatmap-day${d.trained?' trained':''}${d.isToday?' today':''}"></div>`).join('') +
+    `</div>`
+  ).join('');
+
+  wrap.innerHTML = `
+    <div class="heatmap-header">
+      <span class="heatmap-title">訓練紀錄 · 近半年</span>
+      <span class="heatmap-legend">🟩 ${totalTrained} 天</span>
+    </div>
+    ${monthHtml}
+    <div class="heatmap-grid">${gridHtml}</div>`;
+}
+
+
+function renderWeeklyReport() {
+  const wrap = document.getElementById('weekly-report-wrap');
+  if (!wrap) return;
+
+  // 計算本週一到今天的日期範圍
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=日,1=一,...,6=六
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  monday.setHours(0, 0, 0, 0);
+
+  const weekDayNames = ['一','二','三','四','五','六','日'];
+  const dayDots = [];
+  let trainedDays = 0;
+  let totalVolume = 0; // 總訓練量 lb（重量×次數 的加總）
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dateKey = d.toLocaleDateString('zh-TW').replace(/\//g, '-');
+    const isToday = d.toLocaleDateString('zh-TW') === getTodayKey();
+    const isFuture = d > now && !isToday;
+
+    // 看當天有沒有打勾紀錄
+    const checked = ls(STORAGE_KEYS.checked(currentUser, dateKey), {});
+    const trained = !isFuture && Object.values(checked).some(v => v);
+    if (trained) trainedDays++;
+
+    dayDots.push({ name: weekDayNames[i], trained, isToday, isFuture });
+  }
+
+  // 本週訓練量：從日誌中找本週的紀錄
+  Object.values(trainingLogs).forEach(logs => {
+    logs.forEach(entry => {
+      const entryDate = new Date(entry.date.replace(/\//g, '-'));
+      if (entryDate >= monday && entryDate <= now) {
+        const w = parseFloat(entry.w) || 0;
+        const r = parseInt(entry.r) || 0;
+        totalVolume += w * r;
+      }
+    });
+  });
+
+  // 本週飲食達標天數（蛋白質）
+  const u = USERS[currentUser];
+  let proteinDays = 0;
+  let avgCalories = 0;
+  let dietDayCount = 0;
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    if (d > now) break;
+    const dateKey = d.toLocaleDateString('zh-TW').replace(/\//g, '-');
+    const diet = ls(STORAGE_KEYS.diet(currentUser, dateKey), null);
+    if (diet && (diet.calories > 0 || diet.protein > 0)) {
+      dietDayCount++;
+      avgCalories += diet.calories || 0;
+      if ((diet.protein || 0) >= u.proteinTarget) proteinDays++;
+    }
+  }
+  const avgCal = dietDayCount > 0 ? Math.round(avgCalories / dietDayCount) : 0;
+
+  // 週開始/結束日期
+  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+  const fmt = (d) => `${d.getMonth()+1}/${d.getDate()}`;
+  const weekRange = `${fmt(monday)} – ${fmt(sunday)}`;
+
+  // 蛋白質達標評語
+  const proteinClass = proteinDays >= 5 ? 'good' : proteinDays >= 3 ? '' : 'warn';
+  const proteinComment = proteinDays >= 5 ? '🔥 非常好！' : proteinDays >= 3 ? '💪 還不錯' : '⚠️ 加油';
+
+  // 訓練天數評語
+  const trainGoal = Object.keys(u.trainingDays).length;
+  const trainClass = trainedDays >= trainGoal ? 'good' : trainedDays >= Math.ceil(trainGoal/2) ? '' : 'warn';
+
+  wrap.innerHTML = `
+    <div class="weekly-report">
+      <div class="weekly-report-header">
+        <div class="weekly-report-title">本週報告</div>
+        <div class="weekly-report-date">${weekRange}</div>
+      </div>
+      <div class="weekly-report-grid">
+        <div class="weekly-stat">
+          <div class="weekly-stat-val ${trainClass}">${trainedDays}<span class="weekly-stat-unit">天</span></div>
+          <div class="weekly-stat-lab">訓練天數</div>
+        </div>
+        <div class="weekly-stat">
+          <div class="weekly-stat-val">${totalVolume > 0 ? (totalVolume >= 1000 ? (totalVolume/1000).toFixed(1) + '<span class="weekly-stat-unit">t</span>' : Math.round(totalVolume) + '<span class="weekly-stat-unit">lb</span>') : '–'}</div>
+          <div class="weekly-stat-lab">總訓練量</div>
+        </div>
+        <div class="weekly-stat">
+          <div class="weekly-stat-val ${proteinClass}">${proteinDays}<span class="weekly-stat-unit">天</span></div>
+          <div class="weekly-stat-lab">蛋白質達標</div>
+        </div>
+      </div>
+      <div class="weekly-days-row">
+        ${dayDots.map(d => `<div class="weekly-day-dot ${d.trained ? 'trained' : ''} ${d.isToday ? 'today' : ''}">${d.name}</div>`).join('')}
+      </div>
+      <div class="weekly-highlights">
+        <div class="weekly-hl-row">
+          <span class="weekly-hl-label">訓練目標</span>
+          <div class="weekly-bar-wrap"><div class="weekly-bar" style="width:${Math.min(100, trainedDays/trainGoal*100).toFixed(0)}%"></div></div>
+          <span class="weekly-hl-val ${trainClass}">${trainedDays} / ${trainGoal} 天</span>
+        </div>
+        <div class="weekly-hl-row">
+          <span class="weekly-hl-label">蛋白質達標</span>
+          <div class="weekly-bar-wrap"><div class="weekly-bar" style="width:${Math.min(100, proteinDays/7*100).toFixed(0)}%;background:var(--blue)"></div></div>
+          <span class="weekly-hl-val ${proteinClass}">${proteinComment}</span>
+        </div>
+        ${avgCal > 0 ? `<div class="weekly-hl-row">
+          <span class="weekly-hl-label">平均熱量</span>
+          <div class="weekly-bar-wrap"><div class="weekly-bar" style="width:${Math.min(100, avgCal/u.kcalTarget*100).toFixed(0)}%"></div></div>
+          <span class="weekly-hl-val">${avgCal.toLocaleString()} kcal</span>
+        </div>` : ''}
+      </div>
+    </div>`;
+}
+
+// 組裝
+function renderProgress() {
+  renderWeeklyReport();
+  renderHeatmap();
+  renderProgStats();
+  renderProgChart();
+  renderProgList();
+}
+
+function deleteProgress(idx) {
+  progressEntries.splice(idx,1);
+  ls_set(STORAGE_KEYS.progress(currentUser), progressEntries);
+  renderProgress();
+}
+
+function saveProgress() {
+  const wRaw = parseFloat(document.getElementById('inp-w').value);
+  const fRaw = parseFloat(document.getElementById('inp-f').value);
+  const tEl = document.getElementById('inp-target');
+  const tRaw = tEl ? parseFloat(tEl.value) : NaN;
+  const wEl = document.getElementById('inp-w');
+  // 驗證體重：必填、1–660 lb 合理範圍
+  if (isNaN(wRaw) || wRaw < 1 || wRaw > 660) {
+    wEl.style.borderColor = 'var(--danger)';
+    wEl.focus(); return;
+  }
+  wEl.style.borderColor = '';
+  const w = wRaw.toFixed(1);
+  const f = (!isNaN(fRaw) && fRaw > 0 && fRaw < 100) ? fRaw.toFixed(1) : '';
+  if (!isNaN(tRaw) && tRaw > 0 && tRaw < 300) ls_set(STORAGE_KEYS.targetWeight(currentUser), tRaw);
+  progressEntries = [{date: getTodayKey(), w, f}, ...progressEntries].slice(0, 52); // 最多 52 筆（約1年）
+  ls_set(STORAGE_KEYS.progress(currentUser), progressEntries);
+  document.getElementById('inp-w').value = '';
+  document.getElementById('inp-f').value = '';
+  if (tEl) tEl.value = '';
+  renderProgress();
+}
+
+function deleteCustomDay(i) {
+  customDays.splice(i, 1);
+  ls_set(STORAGE_KEYS.customDays(currentUser), customDays);
+  syncCustomDaysToDaysData();
+  renderCustomDays();
+  renderDaySwitcher_update();
+}
+
+// 把 customDays 同步進 DAYS_DATA（讓今日頁面可選）
+function syncCustomDaysToDaysData() {
+  // 移除舊的 custom，保留內建
+  const builtin = USERS[currentUser].days;
+  DAYS_DATA.length = 0;
+  builtin.forEach(d => DAYS_DATA.push(d));
+  customDays.forEach(d => DAYS_DATA.push(d));
+  ALL_EX.length = 0;
+  DAYS_DATA.flatMap(d => d.ex.map(e => e.zh)).forEach(e => ALL_EX.push(e));
+}
+
+// 更新今日頁 day switcher（建立計畫後即時生效）
+function renderDaySwitcher_update() {
+  renderToday();
+}
+
+// ── Mini floating timer ──────────────────────────────────────────────
+let miniRunning = false;
+let miniStartedAt = null;
+let miniBaseLeft = 90;
+let miniDuration = 90;
+let miniInterval = null;
+
+function miniTimerStart(sec, label) {
+  miniDuration = sec;
+  miniBaseLeft = sec;
+  miniStartedAt = performance.now();
+  miniRunning = true;
+  const el = document.getElementById('mini-timer');
+  el.classList.remove('hidden', 'urgent');
+  const labelEl = el.querySelector('.mini-timer-label');
+  if (labelEl) labelEl.textContent = label || '組間休息';
+  miniUpdateDisplay();
+  if (miniInterval) clearInterval(miniInterval);
+  miniInterval = setInterval(miniTick, 250);
+  syncWakeLock();
+  if (navigator.vibrate) navigator.vibrate(40);
+}
+
+function miniCalcLeft() {
+  if (!miniRunning || !miniStartedAt) return miniBaseLeft;
+  return Math.max(0, miniBaseLeft - (performance.now() - miniStartedAt) / 1000);
+}
+
+function miniTick() {
+  const left = miniCalcLeft();
+  miniUpdateDisplay();
+  if (left <= 0) {
+    miniTimerDone();
+  }
+}
+
+function miniUpdateDisplay() {
+  const left = miniCalcLeft();
+  const secs = Math.ceil(left);
+  const m = Math.floor(secs / 60), s = secs % 60;
+  const disp = document.getElementById('mini-display');
+  const bar = document.getElementById('mini-bar');
+  const el = document.getElementById('mini-timer');
+  if (disp) disp.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+  if (bar) bar.style.width = `${Math.max(0, (left / miniDuration) * 100)}%`;
+  if (el) el.classList.toggle('urgent', left <= 10 && left > 0);
+}
+
+function miniTimerDone() {
+  clearInterval(miniInterval); miniInterval = null;
+  miniRunning = false;
+  miniBaseLeft = 0;
+  miniUpdateDisplay();
+  playBeep();
+  syncWakeLock();
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  sendTimerNotification('⏱ 組間休息結束！', '時間到，準備開始下一組 💪');
+  document.getElementById('mini-btn-toggle').textContent = '▶';
+  setTimeout(() => miniTimerClose(), 3000);
+}
+
+function miniTimerToggle() {
+  const btn = document.getElementById('mini-btn-toggle');
+  if (miniRunning) {
+    miniBaseLeft = miniCalcLeft();
+    miniStartedAt = null;
+    miniRunning = false;
+    clearInterval(miniInterval); miniInterval = null;
+    if (btn) btn.textContent = '▶';
+  } else {
+    if (miniBaseLeft <= 0) miniBaseLeft = miniDuration;
+    miniStartedAt = performance.now();
+    miniRunning = true;
+    if (miniInterval) clearInterval(miniInterval);
+    miniInterval = setInterval(miniTick, 250);
+    if (btn) btn.textContent = '⏸';
+  }
+  syncWakeLock();
+}
+
+function miniTimerClose() {
+  clearInterval(miniInterval); miniInterval = null;
+  miniRunning = false;
+  document.getElementById('mini-timer').classList.add('hidden');
+}
+
+
+
+// ── Timer ─────────────────────────────────────────────────────────────
+// 用 performance.now() 記錄絕對開始時間，切到背景再回來用時間差補算
+// 不靠 setInterval 計數，所以背景計時準確
+let timerDuration = 90;
+let timerSecondsLeft = 90;
+let timerRunning = false;
+let timerInterval = null;
+let timerStartedAt = null;   // performance.now() 開始時間
+let timerBaseLeft = 90;      // 按下開始/繼續時的剩餘秒數
+
+// 從時間差算出目前剩餘秒數
+function calcSecondsLeft() {
+  if (!timerRunning || timerStartedAt === null) return timerSecondsLeft;
+  const elapsed = (performance.now() - timerStartedAt) / 1000;
+  return Math.max(0, timerBaseLeft - elapsed);
+}
+
+function setPreset(sec) {
+  stopTimerInternal();
+  timerDuration = sec;
+  timerSecondsLeft = sec;
+  timerBaseLeft = sec;
+  timerStartedAt = null;
+  document.querySelectorAll('.preset-btn').forEach((btn,i) =>
+    btn.classList.toggle('active', [60,90,120,180][i] === sec));
+  updateTimerDisplay();
+  syncTimerBtn();
+}
+
+function updateTimerDisplay() {
+  const left = calcSecondsLeft();
+  const displaySecs = Math.ceil(left); // 無條件進位，避免跳過 1 秒
+  const m = Math.floor(displaySecs / 60), s = displaySecs % 60;
+  const el = document.getElementById('timer-display');
+  const lbl = document.getElementById('timer-label');
+  if (el) el.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+  if (lbl) lbl.innerText = left <= 0 ? '時間到！' : timerRunning ? '休息中' : '準備';
+  const ring = document.getElementById('ring-fg');
+  if (ring) {
+    const pct = timerDuration > 0 ? left / timerDuration : 0;
+    ring.style.strokeDashoffset = 427.26 - pct * 427.26;
+    ring.style.stroke = left < 10 && left > 0 ? RD : A;
+  }
+}
+
+function syncTimerBtn() {
+  const btn = document.getElementById('btn-start'); if (!btn) return;
+  btn.innerText = timerRunning ? '⏸ 暫停' : '▶ 開始';
+  btn.style.background = timerRunning ? '#fff' : A;
+  btn.style.color = '#000';
+}
+
+function stopTimerInternal() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  timerRunning = false;
+}
+
+function onTimerFinished() {
+  stopTimerInternal();
+  timerSecondsLeft = 0;
+  timerBaseLeft = 0;
+  syncTimerBtn();
+  updateTimerDisplay();
+  syncWakeLock();
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  playBeep();
+  sendTimerNotification('⏱ 休息結束！', '計時器時間到，準備開始下一組 💪');
+}
+
+function startTimerInterval() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    const left = calcSecondsLeft();
+    if (left <= 0) {
+      onTimerFinished();
+    } else {
+      updateTimerDisplay();
+    }
+  }, 250); // 250ms 更新，畫面更順暢，不影響計時精度
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    timerSecondsLeft = calcSecondsLeft();
+    timerBaseLeft = timerSecondsLeft;
+    timerStartedAt = null;
+    stopTimerInternal();
+  } else {
+    requestNotificationPermission();
+    if (timerSecondsLeft <= 0) {
+      timerSecondsLeft = timerDuration;
+      timerBaseLeft = timerDuration;
+    } else {
+      timerBaseLeft = timerSecondsLeft;
+    }
+    timerStartedAt = performance.now();
+    timerRunning = true;
+    startTimerInterval();
+  }
+  syncWakeLock();
+  syncTimerBtn();
+  updateTimerDisplay();
+}
+
+function resetTimer() {
+  stopTimerInternal();
+  timerSecondsLeft = timerDuration;
+  timerBaseLeft = timerDuration;
+  timerStartedAt = null;
+  updateTimerDisplay();
+  syncTimerBtn();
+}
+
+// ── Wake Lock（防止 iPhone 螢幕休眠）────────────────────────────────
+let wakeLock = null;
+
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return; // 不支援就算了
+  if (wakeLock) return; // 已經鎖著
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch(e) { wakeLock = null; }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+}
+
+// 任一 timer 在跑就持有 wake lock；全停了才釋放
+function syncWakeLock() {
+  if (timerRunning || miniRunning) acquireWakeLock();
+  else releaseWakeLock();
+}
+
+// 回到前景時，如果 timer 仍在跑，重新取得（iOS 切出去會自動釋放）
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && (timerRunning || miniRunning)) acquireWakeLock();
+});
+
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  if (miniRunning) {
+    const left = miniCalcLeft();
+    if (left <= 0) miniTimerDone();
+    else { miniUpdateDisplay(); if (!miniInterval) miniInterval = setInterval(miniTick, 250); }
+  }
+  if (timerRunning) {
+    const left = calcSecondsLeft();
+    if (left <= 0) {
+      onTimerFinished();
+    } else {
+      updateTimerDisplay();
+      // 重啟 interval（背景時可能被 throttle）
+      startTimerInterval();
+    }
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────
+window.onload = function() {
+  initScrollCollapse();
+  requestNotificationPermission();
+  const saved = ls(STORAGE_KEYS.currentUser(), null);
+  if (!saved) {
+    document.getElementById('onboarding').style.display = 'flex';
+    return;
+  }
+  currentUser = saved;
+  loadUserState();
+  updateHeroUser();
+  renderAll();
+  // 恢復上次的 tab（最多到 tab3，收藏與計畫已移除）
+  const lastTab = Math.min(ls(STORAGE_KEYS.lastTab(currentUser), 0), 2);
+  if (lastTab > 0) switchTab(lastTab);
+};
+
+// ── 跨天自動更新 ──────────────────────────────────────────────────────
+(function() {
+  let lastDay = getTodayKey();
+  setInterval(() => {
+    const today = getTodayKey();
+    if (today !== lastDay) {
+      lastDay = today;
+      // 日期變了：重設今日打勾狀態、重新載入飲食資料
+      dayChecked = {};
+      todayRecommend = null;
+      window._todayExList = [];
+      cleanOldDietKeys(); // 清理超過30天的舊 diet key
+      loadDietForToday();
+      renderAll();
+    }
+  }, 60000); // 每分鐘檢查
+})();
+
+// ── PWA Service Worker ────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
