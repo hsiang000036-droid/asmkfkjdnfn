@@ -779,6 +779,244 @@
   .plan-action-btn{background:#111;border:1px solid #2a2a2a;color:#ddd;padding:10px 12px;font-size:12px;font-weight:800;cursor:pointer}
   .plan-action-btn.primary{background:#0f1a00;border-color:#355000;color:var(--primary)}
 
+  /* ── Visual refinement pass ─────────────────────────────────────
+     Keep app logic intact; reduce visual noise and make hierarchy calmer. */
+  :root{
+    --bg:#070807;
+    --card:#0d0f0d;
+    --card-2:#101410;
+    --card-3:#141914;
+    --border:#202620;
+    --border-soft:#171c17;
+    --muted:#7c837c;
+    --sub:#697069;
+    --surface-shadow:0 10px 32px rgba(0,0,0,.28);
+  }
+  html,body{background:var(--bg);color:#f3f4f1}
+  #app{background:radial-gradient(circle at 50% -80px,rgba(200,245,55,.08),transparent 260px),var(--bg)}
+  #scroll{padding:14px 14px calc(108px + var(--safe-b));scrollbar-width:none}
+  #scroll::-webkit-scrollbar{display:none}
+  .tab-content{padding:0;max-width:560px;margin:0 auto}
+
+  #hero{border-bottom:1px solid rgba(200,245,55,.08);background:linear-gradient(180deg,#0b1008 0%,#070807 92%)}
+  #hero.expanded{max-height:236px}
+  #hero.collapsed{max-height:48px}
+  #hero-collapsed{padding:calc(10px + var(--safe-t)) 18px 10px}
+  #hero-expanded{padding:calc(22px + var(--safe-t)) 22px 0}
+  .hero-eyebrow{font-size:10px;letter-spacing:3px;color:#9fc835;margin-bottom:8px}
+  .hero-title{font-size:38px;letter-spacing:0;margin-bottom:7px}
+  .hero-sub{color:#6f766f;font-size:12px;letter-spacing:1.2px}
+  .stats-grid{border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.12)}
+  .stat-cell{padding:12px 8px;border-right:1px solid rgba(255,255,255,.055)}
+  .stat-val{font-size:18px;color:var(--primary)}
+  .stat-lab{color:#656b65}
+
+  #tabbar{
+    left:14px;right:14px;bottom:calc(10px + var(--safe-b));
+    padding:8px;gap:6px;border:1px solid rgba(255,255,255,.08);
+    border-radius:20px;background:rgba(9,10,9,.88);
+    box-shadow:0 16px 44px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .tab-btn{min-height:48px;border-radius:14px;font-size:12px;color:#737973;border:0}
+  .tab-btn.active{background:#17200d;color:var(--primary);border-color:transparent;box-shadow:inset 0 0 0 1px rgba(200,245,55,.22)}
+
+  .card,.app-card,.today-section-card,.week-diet-wrap,.wc-chart-wrap,.orm-wrap,.volume-wrap,.goal-dash,.mode-dash,.weekly-report,.insight-card,.coach-card,.target-card,.rec-banner,.install-card,.weight-card,.water-wrap,.quick-diet-wrap{
+    border-radius:12px;border:1px solid var(--border-soft);background:var(--card);box-shadow:none;
+  }
+  .app-card,.today-section-card,.weekly-report,.mode-dash,.goal-dash,.volume-wrap,.insight-card,.coach-card{margin-bottom:10px}
+  .card{margin-bottom:10px}
+  .card-inner{padding:14px}
+  .divider{display:none}
+  .hint-box{border-color:#253600;background:#101607;border-radius:12px;color:#9fc835;margin-bottom:16px}
+
+  .label{
+    border:0;background:#18220d;color:var(--primary);
+    border-radius:999px;padding:4px 8px;font-size:9px;letter-spacing:1.3px;
+  }
+  .section-title{font-size:16px;letter-spacing:0;font-weight:850}
+  .card-label,.week-diet-title,.today-section-title,.goal-title,.volume-title,.goal-dash-title,.mode-dash-title,.weekly-report-title,.coach-title,.insight-title{
+    letter-spacing:1.4px;
+  }
+
+  .fold-section{margin-bottom:10px}
+  .fold-head{
+    padding:13px 14px;border-radius:14px;background:var(--card-2);
+    border:1px solid var(--border-soft);
+  }
+  .fold-head.open{background:#11170d;border-color:#253600}
+  .fold-arrow{border:0;background:#151915;color:#7f877f;min-width:38px;padding:5px 8px}
+  .fold-head.open .fold-arrow{background:#1a250d;color:var(--primary);border:0}
+  .fold-body.open{padding-top:8px}
+
+  .day-switcher{gap:7px;margin-bottom:10px}
+  .day-switch-btn{border:1px solid var(--border);background:var(--card-2);border-radius:12px;padding:10px 8px;color:#777}
+  .day-switch-btn.active{background:var(--primary);color:#081000;border-color:var(--primary)}
+  .day-switch-hint{color:#545a54;margin-bottom:10px}
+
+  .today-section-head,.goal-card-head,.goal-dash-head,.volume-head,.mode-dash-head,.weekly-report-header{
+    background:transparent;border-bottom:1px solid var(--border-soft);padding:13px 15px;
+  }
+  .today-section-sub,.goal-sub,.goal-dash-sub,.mode-dash-sub,.volume-note{color:#707770;line-height:1.5}
+
+  .ex-item{border-bottom:1px solid var(--border-soft)}
+  .ex-row{min-height:66px;background:transparent}
+  .ex-main{padding:14px 12px 12px 15px}
+  .ex-name{font-size:15px;font-weight:720}
+  .ex-sets{background:#17220c;border-radius:999px;padding:3px 8px;color:var(--primary)}
+  .ex-en,.ex-last-log,.ex-expand-hint{color:#646b64}
+  .ex-check-col{width:58px;border-left:1px solid var(--border-soft)}
+  .check-box{border-radius:9px;border-color:#333a33}
+  .check-box.checked{background:var(--primary);border-color:var(--primary)}
+  .ex-cue,.quick-log,.ex-trend-wrap,.rec-suggest{background:#0a0d0a;border-top:1px solid var(--border-soft)}
+  .role-chip,.coach-tag,.insight-tag,.week-diet-tag{border-radius:999px;background:#111611;border-color:#252b25;color:#858d85}
+
+  .goal-mode-grid{gap:8px;padding:12px 14px}
+  .goal-mode-btn,.action-btn,.plan-action-btn,.preset-btn,.btn-reset,.rec-refresh-btn,.water-btn,.quick-diet-btn,.diet-history-btn{
+    border-radius:10px;border-color:#252b25;background:var(--card-2);
+  }
+  .goal-mode-btn.active,.action-btn.primary,.plan-action-btn.primary,.preset-btn.active{
+    background:#18230d;color:var(--primary);border-color:#314700;
+  }
+  .btn-save,.quick-log-save,.btn-start,.install-btn{
+    border-radius:10px;background:var(--primary);color:#071000;
+  }
+
+  .weekly-report{border-color:#253600}
+  .weekly-report-grid,.mode-dash-grid{border-bottom:1px solid var(--border-soft)}
+  .weekly-stat,.mode-dash-stat{border-right:1px solid var(--border-soft)}
+  .weekly-days-row{border-bottom:1px solid var(--border-soft);gap:6px}
+  .weekly-day-dot{border-radius:8px;border-color:#252b25;background:#0a0c0a}
+  .weekly-day-dot.trained{background:#16230a}
+  .weekly-highlights{padding:13px 15px}
+  .weekly-coach{background:#0b0f0b;border-bottom:1px solid var(--border-soft)}
+  .weekly-hl-label{color:#737a73}
+  .weekly-hl-val{color:#d7dbd2}
+
+  .volume-list,.goal-dash-grid{padding:13px 15px}
+  .volume-bar-bg,.goal-dash-bar,.mode-bar-bg,.tracker-bar-wrap,.macro-bar-wrap,.water-bar-wrap{background:#171c17}
+  .volume-bar-fill,.goal-dash-fill,.weekly-bar,.tracker-bar-primary,.water-bar{background:var(--primary)}
+  .mode-dash-row{border-bottom:1px solid var(--border-soft);padding:11px 15px}
+  .mode-dash-pill,.phase-pill{border-color:#2d3e13;background:#12190b}
+  .perf-row{grid-template-columns:1fr auto;row-gap:4px}
+  .perf-next{grid-column:1 / -1;text-align:left;color:#747c74}
+
+  .tracker-dashboard{
+    background:var(--card-2);border:1px solid var(--border-soft);
+    border-radius:12px;padding:14px 12px;margin-bottom:12px;
+  }
+  .tracker-box:first-child{border-right:1px solid var(--border-soft)}
+  .tracker-box .t-num{font-size:24px}
+  .quick-diet-wrap{padding:12px;margin:10px 0;background:var(--card)}
+  .quick-diet-row{gap:7px}
+  .quick-diet-label{color:#6d746d}
+  .water-wrap{padding:14px;margin-bottom:10px;background:#0b1014;border-color:#172331}
+  .water-btns{gap:7px}
+  .water-btn{background:#0f151b;border-color:#1e2c3a;border-radius:10px}
+
+  .inp,.quick-log-inp,.quick-log-select{
+    border-radius:10px;border-color:#252b25;background:#090b09;
+  }
+  .inp:focus,.quick-log-inp:focus,.quick-log-select:focus{border-color:#516d1d}
+
+  .prog-grid,.nut-grid,.week-diet-grid{gap:8px}
+  .prog-card,.nut-card,.week-diet-card,.orm-card,.summary-card{
+    border-radius:12px;background:var(--card-2);border-color:var(--border-soft);
+  }
+  .week-diet-wrap,.wc-chart-wrap,.orm-wrap{background:#0a0d0a;border-color:#1d2b10}
+  .week-diet-coach-item,.week-diet-action{border-radius:10px}
+  .water-wrap{display:none!important}
+  .today-review-toggle{margin:12px 0 8px}
+  #progress-dashboard-wrap{padding-top:8px}
+  #tab0 .divider + .section-row-lg{display:none}
+  #tab0 > .quick-diet-wrap,
+  #tab0 > .water-wrap,
+  #tab0 > .divider,
+  #tab0 > .hint-box{display:none!important}
+  #tabbar{left:12px;right:12px;bottom:10px;border-radius:22px;padding:8px calc(8px + env(safe-area-inset-right)) calc(8px + var(--safe-b)) calc(8px + env(safe-area-inset-left));gap:6px;border:1px solid rgba(255,255,255,.06)}
+  .tab-btn{min-height:46px;border-radius:16px;font-size:12px;letter-spacing:0}
+  .tab-btn.active{background:#18240c;box-shadow:inset 0 0 0 1px rgba(200,245,55,.28),0 8px 24px rgba(0,0,0,.28)}
+  .page-title-block{padding:4px 2px 14px}
+  .page-kicker{font-size:10px;color:var(--primary);letter-spacing:2px;font-weight:900;margin-bottom:6px}
+  .page-title{font-size:30px;line-height:1;font-weight:900;color:var(--text)}
+  .page-sub{font-size:12px;line-height:1.6;color:#747a72;margin-top:8px}
+  .diet-segment{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:sticky;top:0;z-index:20;padding:8px 0 12px;background:linear-gradient(180deg,#050505 78%,rgba(5,5,5,0))}
+  .diet-seg-btn{border:1px solid var(--border-soft);background:#0c0f0b;color:#7e857b;border-radius:14px;padding:12px 8px;font-size:13px;font-weight:800;cursor:pointer}
+  .diet-seg-btn.active{background:#17220d;color:var(--primary);border-color:#314912;box-shadow:inset 0 0 0 1px rgba(200,245,55,.16)}
+  #progress-tab-mount #progress-dashboard-wrap{display:block}
+  #progress-tab-mount .app-card,
+  #progress-tab-mount .weekly-report,
+  #progress-tab-mount .mode-dash,
+  #progress-tab-mount .goal-dash,
+  #progress-tab-mount .volume-wrap,
+  #progress-tab-mount .insight-card,
+  #progress-tab-mount .coach-card{margin-bottom:10px}
+  #tab0 .weight-card{margin-top:10px}
+
+  /* Final app polish pass */
+  #hero.expanded{max-height:164px}
+  #hero.collapsed{max-height:46px}
+  #hero-expanded{padding:calc(14px + var(--safe-t)) 18px 0}
+  .hero-eyebrow{font-size:9px;letter-spacing:2px;margin-bottom:5px}
+  .hero-title{font-size:28px;margin-bottom:4px}
+  .hero-sub{font-size:11px;letter-spacing:.5px}
+  .stats-grid{margin-top:10px;border-top-color:rgba(255,255,255,.06)}
+  .stat-cell{padding:9px 8px}
+  .stat-val{font-size:17px}
+  .stat-lab{font-size:9px}
+  #today-banner{display:none}
+
+  .workout-header{background:transparent;border:0;margin:2px 0 8px;padding:0}
+  .workout-title-row{display:flex;align-items:center;gap:8px;min-width:0}
+  .workout-day-title{font-size:22px;font-weight:900;line-height:1.15;color:var(--text);letter-spacing:0}
+  #progress-bar-wrap{height:6px;background:#171c17;border-radius:999px;overflow:hidden;margin:10px 0 8px}
+  #progress-bar{height:100%;background:var(--primary);border-radius:999px;transition:width .2s ease}
+  .today-hint{font-size:12px;color:#6f766f;line-height:1.5;margin-bottom:10px}
+  .ex-note{font-size:12px;line-height:1.65;color:#8b9288;padding:12px 14px}
+
+  .today-section-card{border:0;background:transparent;overflow:visible}
+  .today-section-head{display:none}
+  .ex-item{background:var(--card);border:1px solid var(--border-soft);border-radius:16px;margin-bottom:8px;overflow:hidden}
+  .ex-row{min-height:64px}
+  .ex-main{padding:13px 12px 12px 14px}
+  .ex-num{display:flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;border-radius:50%;background:#151915;color:#8d948a;font-size:11px}
+  .ex-num.done{background:#263713;color:var(--primary)}
+  .ex-name{font-size:16px;font-weight:800;letter-spacing:0}
+  .ex-sets{border-radius:999px;background:#17200d;border:1px solid #293a11;padding:4px 9px;font-size:11px}
+  .ex-bottom{padding-left:32px;gap:7px;flex-wrap:wrap}
+  .ex-en{display:none}
+  .ex-expand-hint{color:#6f766f}
+  .ex-check-col{width:56px;border-left:1px solid var(--border-soft)}
+  .check-box{width:28px;height:28px;border-radius:50%}
+  .check-box.checked::after{content:"✓";font-size:15px}
+  .ex-cue,.ex-trend-wrap,.quick-log,.rec-suggest{border-top:1px solid var(--border-soft)}
+  .optional-note{font-size:11px;line-height:1.6;color:#777;padding:10px 14px;background:#0b0d0b;border-top:1px solid var(--border-soft)}
+  .set-tracker{padding:10px 12px 12px}
+  .quick-log-row{display:grid;grid-template-columns:1fr 72px 82px;gap:8px}
+  .quick-log-save,.quick-log-skip{grid-column:auto}
+
+  .review-segment{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 12px}
+  .review-seg-btn{border:1px solid var(--border-soft);background:#0c0f0b;color:#7e857b;border-radius:14px;padding:12px 8px;font-size:13px;font-weight:800;cursor:pointer}
+  .review-seg-btn.active{background:#17220d;color:var(--primary);border-color:#314912;box-shadow:inset 0 0 0 1px rgba(200,245,55,.16)}
+  #progress-dashboard-wrap[data-review-view="week"] .review-trend,
+  #progress-dashboard-wrap[data-review-view="week"] .review-settings{display:none!important}
+  #progress-dashboard-wrap[data-review-view="trend"] .review-week,
+  #progress-dashboard-wrap[data-review-view="trend"] .review-settings{display:none!important}
+  #progress-dashboard-wrap[data-review-view="settings"] .review-week,
+  #progress-dashboard-wrap[data-review-view="settings"] .review-trend{display:none!important}
+
+  #coach-settings-wrap .app-card{border-radius:16px}
+  .install-card{border-radius:16px;background:#11170d;border-color:#293a11}
+  .install-title{font-size:13px;font-weight:900;color:var(--primary)}
+  .install-sub{font-size:11px;line-height:1.5;color:#8b9288;margin-top:3px}
+
+  @media (max-width:380px){
+    #tabbar{left:10px;right:10px}
+    .hero-title{font-size:34px}
+    .section-title{font-size:15px}
+    .goal-mode-grid,.phase-mode-grid{grid-template-columns:1fr}
+    .weekly-coach .weekly-hl-row{grid-template-columns:58px 1fr}
+  }
+
 </style>
 </head>
 <body>
@@ -910,6 +1148,11 @@
         <span class="label">📊</span>
         <span class="section-title">每週進度</span>
       </div>
+      <div class="fold-head today-review-toggle" onclick="toggleStaticPanel('progress-dashboard-wrap')">
+        <span class="label">REVIEW</span><span class="section-title">每週回顧與設定</span><span class="fold-arrow">展開</span>
+      </div>
+      <div id="progress-dashboard-wrap" class="fold-body">
+      <div id="coach-settings-wrap"></div>
       <div id="weekly-report-wrap"></div>
       <div id="weekly-volume-wrap"></div>
       <div id="goal-dashboard-wrap"></div>
@@ -950,10 +1193,16 @@
       </div>
       <div id="prog-list"></div>
       <div id="orm-wrap"></div>
+      </div>
       <div class="hint-box">💡 目標：每月減 1–2 kg。體重上升不代表失敗，可能是肌肉增加</div>
     </div>
 
     <div id="tab1" class="tab-content">
+      <div class="diet-segment">
+        <button class="diet-seg-btn active" data-panel="today" onclick="showDietPanel('today')">今天</button>
+        <button class="diet-seg-btn" data-panel="history" onclick="showDietPanel('history')">歷史</button>
+        <button class="diet-seg-btn" data-panel="review" onclick="showDietPanel('review')">回顧</button>
+      </div>
       <div class="fold-head open" onclick="toggleStaticPanel('diet-custom-wrap')">
         <span class="label">⭐</span><span class="section-title">我的常駐食物</span><span class="fold-arrow">收起</span>
       </div>
@@ -1089,6 +1338,15 @@
     </div>
 
     <div id="tab2" class="tab-content">
+      <div class="page-title-block">
+        <div class="page-kicker">REVIEW</div>
+        <div class="page-title">回顧</div>
+        <div class="page-sub">看趨勢、組數和下週重點，不干擾今天訓練。</div>
+      </div>
+      <div id="progress-tab-mount"></div>
+    </div>
+
+    <div id="tab3" class="tab-content">
       <div id="timer-wrap">
         <div class="section-row-lg">
           <span class="label">⏱</span><span class="timer-title">休息計時器</span>
@@ -1146,7 +1404,8 @@
   <div id="tabbar">
     <button class="tab-btn active" onclick="switchTab(0)">今日</button>
     <button class="tab-btn" onclick="switchTab(1)">飲食</button>
-    <button class="tab-btn" onclick="switchTab(2)">計時</button>
+    <button class="tab-btn" onclick="switchTab(2)">回顧</button>
+    <button class="tab-btn" onclick="switchTab(3)">計時</button>
   </div></div>
 
 <script>
@@ -1463,9 +1722,40 @@ let currentTab = 0, openCues = {}, openDietHistory = {}, dietHistoryEditorDate =
   diet_backup: false,
 };
 let dietReviewWeekOffset = -1;
+let dietPanelInitialized = false;
 
 function toggleCue(k) { openCues[k] = !openCues[k]; renderToday(); }
 function togglePanel(key) { openPanels[key] = !openPanels[key]; renderAll(); }
+function mountProgressTab() {
+  const mount = document.getElementById('progress-tab-mount');
+  const progress = document.getElementById('progress-dashboard-wrap');
+  if (!mount || !progress || progress.parentElement === mount) return;
+  progress.classList.add('open');
+  mount.appendChild(progress);
+  const oldHead = document.querySelector('.today-review-toggle');
+  if (oldHead) oldHead.remove();
+}
+function setFoldOpen(id, open) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open', open);
+  const head = el.previousElementSibling;
+  if (head && head.classList.contains('fold-head')) {
+    head.classList.toggle('open', open);
+    const arrow = head.querySelector('.fold-arrow');
+    if (arrow) arrow.textContent = open ? '收起' : '展開';
+  }
+}
+function showDietPanel(panel) {
+  document.querySelectorAll('.diet-seg-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.panel === panel);
+  });
+  setFoldOpen('diet-custom-wrap', panel === 'today');
+  setFoldOpen('diet-today-wrap', panel === 'today');
+  setFoldOpen('diet-history-list', panel === 'history');
+  setFoldOpen('diet-weekly-wrap', panel === 'review');
+  setFoldOpen('diet-backup-wrap', false);
+}
 function toggleStaticPanel(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -1873,6 +2163,8 @@ function showLoading(show) {
 
 function renderAll() {
   if (!document.getElementById('today-section')) return;
+  mountProgressTab();
+  if (!dietPanelInitialized) { showDietPanel('today'); dietPanelInitialized = true; }
   seedDietHistoryDateInput();
   updateHeroUser(); renderHeroBanner(); renderToday();
   renderInstallCard();
@@ -1899,7 +2191,7 @@ function switchTab(i) {
   document.querySelectorAll('.tab-btn').forEach((el,j) => el.classList.toggle('active', j===i));
   document.getElementById('scroll').scrollTop = 0;
   currentTab = i;
-  if (i === 2) { updateTimerDisplay(); syncTimerBtn(); }
+  if (i === 3) { updateTimerDisplay(); syncTimerBtn(); }
   if (currentUser) ls_set(STORAGE_KEYS.lastTab(currentUser), i);
 }
 
@@ -2540,6 +2832,12 @@ function renderTrainingPhaseCard() {
   </div>`;
 }
 
+function renderCoachSettings() {
+  const wrap = document.getElementById('coach-settings-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = renderGoalModeCard() + renderTrainingPhaseCard();
+}
+
 function renderQuickLogPanel(i, ex, exUnit, lastLog, nextSuggest) {
   const lastRir = lastLog && Number.isFinite(parseInt(lastLog.rir, 10)) ? parseInt(lastLog.rir, 10) : 2;
   return `
@@ -2770,8 +3068,6 @@ function renderToday() {
   window._todayExList = exToShow;
 
   el.innerHTML = switcher
-    + renderGoalModeCard()
-    + renderTrainingPhaseCard()
     + renderWorkoutHeader(td, done, total, pct)
     + renderRecommendBanner(rec)
     + `<div class="card"><div class="ex-note">✦ ${rec ? rec.note : td.note}</div></div>`
@@ -5488,6 +5784,7 @@ function renderWeeklyReport() {
 
 // 組裝
 function renderProgress() {
+  renderCoachSettings();
   renderWeeklyReport();
   renderModeDashboard();
   renderWeeklyVolume();
@@ -6215,6 +6512,270 @@ function renderPlanVersionDashboard() {
     </div>
   </div>`;
 }
+
+// Final UI cleanup overrides: clean labels, review sections, compact cards.
+function escapeUiText(v) {
+  return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function setText(selector, text) {
+  const el = document.querySelector(selector);
+  if (el) el.textContent = text;
+}
+
+function cleanStaticText() {
+  document.title = 'FITNESS';
+  const tabs = ['今日', '飲食', '回顧', '計時'];
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => { if (tabs[i]) btn.textContent = tabs[i]; });
+  setText('.hero-eyebrow', '個人化計畫');
+  const labs = document.querySelectorAll('.stats-grid .stat-lab');
+  if (labs[0]) labs[0].textContent = '每日熱量';
+  if (labs[1]) labs[1].textContent = '蛋白質';
+  if (labs[2]) labs[2].textContent = '連續天數';
+  setText('#tab2 .page-kicker', 'REVIEW');
+  setText('#tab2 .page-title', '回顧');
+  setText('#tab2 .page-sub', '本週表現、體重趨勢和設定都集中在這裡。');
+  setText('#tab3 .timer-title', '組間計時');
+  document.querySelectorAll('.diet-seg-btn').forEach(btn => {
+    const label = {today:'今天', history:'歷史', review:'回顧'}[btn.dataset.panel];
+    if (label) btn.textContent = label;
+  });
+  const presetLabels = ['1分', '1.5分', '2分', '3分'];
+  document.querySelectorAll('.preset-btn').forEach((btn, i) => { if (presetLabels[i]) btn.textContent = presetLabels[i]; });
+}
+
+updateHeroUser = function() {
+  const u = USERS[currentUser];
+  if (!u) return;
+  const dietTargets = getDietTargets();
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+  set('hero-name', u.name || 'FITNESS');
+  set('hero-stats-sub', currentUser === 'alex' ? '173CM · 71.8KG · 寬肩窄腰' : '160CM · 線條臀型');
+  set('hero-kcal', dietTargets.kcal.toLocaleString());
+  set('hero-protein', `${todayProtein}g / ${dietTargets.protein}g`);
+  cleanStaticText();
+};
+
+function renderDaySwitcher(idx, recIdx) {
+  const btns = DAYS_DATA.map((d, i) => {
+    const shortTitle = (d.title || d.id || `D${i+1}`).split(' · ')[0].split(' + ')[0];
+    return `<button onclick="setTodayOverride(${i})" class="day-switch-btn ${idx===i?'active':''}">
+      ${escapeUiText(shortTitle)}${i===recIdx && todayOverride===null ? '<span class="day-rec-dot">建議</span>' : ''}
+    </button>`;
+  }).join('');
+  return `<div class="day-switcher">
+    ${btns}
+    <button onclick="setTodayOverride(-1)" class="day-switch-btn ${idx===-1?'rest-active':''}">休息</button>
+  </div>
+  <div class="day-switch-hint">${todayOverride===null ? '依照上次訓練自動安排今天。' : '目前為手動選擇。'}</div>`;
+}
+
+function renderRestDay() {
+  return `<div class="rest-center">
+    <div class="rest-emoji">REST</div>
+    <div class="rest-title">今天休息</div>
+    <div class="rest-sub">恢復也是計畫的一部分。維持蛋白質、睡眠和步數，明天再推進。</div>
+  </div>`;
+}
+
+function renderWorkoutHeader(td, done, total, pct) {
+  const allDone = done === total && total > 0;
+  return `<div class="workout-header">
+    <div class="workout-title-row">
+      <span class="label">TODAY</span>
+      <span class="workout-day-title">${escapeUiText(td.title || '今日訓練')}</span>
+      ${allDone ? '<span class="done-badge">完成</span>' : ''}
+    </div>
+  </div>
+  <div id="progress-bar-wrap"><div id="progress-bar" style="width:${pct}%"></div></div>
+  <div class="today-hint">${done}/${total} 個必要動作完成。點開動作看要領，完成組數後再記重量。</div>`;
+}
+
+function renderRecommendBanner(rec) {
+  if (!rec) return '';
+  if (rec.fixedPlan) {
+    return `<div class="rec-banner">
+      <span class="rec-banner-text">固定菜單模式：照順序完成即可。</span>
+      <button class="rec-refresh-btn" onclick="resetFixedSwapsForToday()">重設輪替</button>
+    </div>`;
+  }
+  return `<div class="rec-banner">
+    <span class="rec-banner-text">已依照你的目標和訓練紀錄安排今日推薦。</span>
+    <button class="rec-refresh-btn" onclick="regenRecommend()">重新生成</button>
+  </div>`;
+}
+
+function renderQuickLogPanel(i, ex, exUnit, lastLog, nextSuggest) {
+  const lastRir = lastLog && Number.isFinite(parseInt(lastLog.rir, 10)) ? parseInt(lastLog.rir, 10) : 2;
+  return `<div class="quick-log">
+    ${lastLog ? `<button class="quick-log-same" onclick="sameAsLast(${i})">同上次：${lastLog.w}${exUnit} × ${lastLog.r}下${lastLog.rir!==undefined ? ` · RIR ${lastLog.rir}` : ''}</button>` : ''}
+    ${nextSuggest ? `<div class="quick-log-suggest">建議：${nextSuggest.w}${exUnit} · ${nextSuggest.reason}</div>` : ''}
+    <div class="quick-log-row">
+      <div class="quick-log-field"><span class="quick-log-label">重量 ${exUnit.toUpperCase()}</span><input id="ql-w" class="quick-log-inp" type="number" inputmode="decimal" placeholder="${lastLog ? lastLog.w : '0'}" step="${exUnit==='kg'?'0.25':'2.5'}" min="0"></div>
+      <div class="quick-log-field"><span class="quick-log-label">次數</span><input id="ql-r" class="quick-log-inp" type="number" inputmode="numeric" placeholder="${lastLog ? lastLog.r : '0'}" min="1"></div>
+      <div class="quick-log-field"><span class="quick-log-label">RIR</span><select id="ql-rir" class="quick-log-select">${[3,2,1,0].map(v => `<option value="${v}" ${v===lastRir?'selected':''}>${v}</option>`).join('')}</select></div>
+      <button class="quick-log-save" onclick="saveQuickLog(${i})">記錄</button>
+      <button class="quick-log-skip" onclick="skipQuickLog(${i})">略過</button>
+    </div>
+  </div>`;
+}
+
+function renderUiExerciseCard(ex, i, prefix, showCheck, rec) {
+  const k = `${prefix}-${i}`;
+  const isOpen = !!openCues[k];
+  const done = showCheck && !!dayChecked[i];
+  const setsCount = parseSetsCount(ex.sets);
+  const doneSets = (daySetsDone[`${prefix}-${i}`] || []);
+  const lastLog = trainingLogs[ex.zh]?.[0];
+  const exUnit = getExUnit(ex.zh);
+  const showQuickLog = showCheck && pendingLogIdx === i && dayChecked[i];
+  const nextSuggest = showQuickLog ? calcNextWeight(ex.zh) : null;
+  const canSwap = rec && (!rec.fixedPlan || (!ex.locked && ex.swapGroup));
+  const setTrackerHtml = `<div class="set-tracker">${Array.from({length:setsCount},(_,si)=>`
+    <div class="set-dot ${doneSets[si]?'done':si===doneSets.filter(Boolean).length?'active':''}" onclick="toggleSet('${prefix}',${i},${si},${setsCount});event.stopPropagation()">${doneSets[si]?'✓':si+1}</div>`).join('')}
+    <span class="set-label">${doneSets.filter(Boolean).length}/${setsCount} 組</span></div>`;
+  const lastLogStr = lastLog ? `上次 ${lastLog.w}${exUnit} × ${lastLog.r}下${lastLog.rir!==undefined ? ` · RIR ${lastLog.rir}` : ''}` : '';
+  return `<div class="ex-item" id="exitem-${k}">
+    <div class="ex-row">
+      <div class="ex-main" onclick="toggleCue('${k}')">
+        <div class="ex-top">
+          <span class="ex-num ${done?'done':''}">${i+1}</span>
+          <span class="ex-name ${done?'done':''}">${escapeUiText(ex.zh)}${isOptionalExercise(ex, i)?'<span class="optional-badge">選配</span>':''}</span>
+          <span class="ex-sets">${escapeUiText(ex.sets)}</span>
+          ${canSwap ? `<button class="rec-swap-btn" onclick="swapRecommendEx(${i});event.stopPropagation()" title="替換">換</button>` : ''}
+        </div>
+        <div class="ex-bottom">
+          ${lastLogStr ? `<span class="ex-last-log">${escapeUiText(lastLogStr)}</span>` : ''}
+          <span class="ex-expand-hint">${isOpen ? '收起' : '展開'}</span>
+        </div>
+      </div>
+      ${showCheck ? `<div class="ex-check-col" onclick="toggleCheck(${i});event.stopPropagation()"><div class="check-box ${done?'checked':''}"></div></div>` : ''}
+    </div>
+    ${isOpen ? `<div class="ex-cue">${escapeUiText(ex.en || '')}${ex.en ? '<br>' : ''}${escapeUiText(ex.cue || '')}</div>` : ''}
+    ${showQuickLog ? renderExTrendChart(ex.zh) : ''}
+    ${showQuickLog ? renderQuickLogPanel(i, ex, exUnit, lastLog, nextSuggest) : ''}
+    ${setTrackerHtml}
+  </div>`;
+}
+
+function renderExListWithRecIndexed(items, rec, prefix, showCheck) {
+  return items.map(({ex, globalIdx}) => renderUiExerciseCard(ex, globalIdx, prefix, showCheck, rec)).join('');
+}
+
+function renderExListWithRec(exercises, rec, prefix, showCheck) {
+  return exercises.map((ex, i) => renderUiExerciseCard(ex, i, prefix, showCheck, rec)).join('');
+}
+
+function renderExList(exercises, prefix, showCheck) {
+  return exercises.map((ex, i) => renderUiExerciseCard(ex, i, prefix, showCheck, null)).join('');
+}
+
+function renderTodaySections(exercises, rec, prefix, showCheck) {
+  if (!exercises.length) return '';
+  const indexed = exercises.map((ex, globalIdx) => ({ ex, globalIdx }));
+  return `<div class="today-section-card">${renderExListWithRecIndexed(indexed, rec, prefix, showCheck)}</div>`;
+}
+
+function renderToday() {
+  const idx = getTodayDayIdx();
+  const td = getTodayDay();
+  const el = document.getElementById('today-section');
+  if (!el) return;
+  const recIdx = getRecommendedDayIdx();
+  const switcher = renderDaySwitcher(idx, recIdx);
+  if (!td) {
+    el.innerHTML = switcher + renderRestDay();
+    cleanStaticText();
+    return;
+  }
+  const rec = getOrGenerateRecommend(idx);
+  const exToShow = rec ? rec.exercises : td.ex;
+  window._todayExList = exToShow;
+  const completion = getWorkoutCompletionStats(exToShow);
+  const total = completion.required || exToShow.length;
+  const done = completion.requiredDone;
+  const pct = total ? (done/total*100).toFixed(0) : 0;
+  el.innerHTML = switcher
+    + renderWorkoutHeader(td, done, total, pct)
+    + renderRecommendBanner(rec)
+    + `<div class="card"><div class="ex-note">${escapeUiText(rec ? rec.note : td.note)}</div></div>`
+    + renderTodaySections(exToShow, rec, 'today', true)
+    + renderWeightCard();
+  cleanStaticText();
+}
+
+function ensureReviewSegment() {
+  const mount = document.getElementById('progress-tab-mount');
+  const progress = document.getElementById('progress-dashboard-wrap');
+  if (!mount || !progress) return;
+  if (!document.getElementById('review-segment')) {
+    mount.insertAdjacentHTML('afterbegin', `<div id="review-segment" class="review-segment">
+      <button class="review-seg-btn active" data-review="week" onclick="showReviewPanel('week')">本週</button>
+      <button class="review-seg-btn" data-review="trend" onclick="showReviewPanel('trend')">趨勢</button>
+      <button class="review-seg-btn" data-review="settings" onclick="showReviewPanel('settings')">設定</button>
+    </div>`);
+  }
+  if (!progress.dataset.reviewView) progress.dataset.reviewView = 'week';
+}
+
+function applyReviewGrouping() {
+  ensureReviewSegment();
+  [
+    'weekly-report-wrap','mode-dashboard-wrap','diet-compliance-wrap','main-performance-wrap',
+    'weekly-volume-wrap','goal-dashboard-wrap','movement-role-wrap','coach-insights-wrap','heatmap-wrap'
+  ].forEach(id => document.getElementById(id)?.classList.add('review-week'));
+  ['prog-stats','chart-wrap','prog-list','orm-wrap'].forEach(id => document.getElementById(id)?.classList.add('review-trend'));
+  ['coach-settings-wrap','plan-version-wrap'].forEach(id => document.getElementById(id)?.classList.add('review-settings'));
+  const progress = document.getElementById('progress-dashboard-wrap');
+  const inputCard = progress?.querySelector('#chart-wrap + .card');
+  if (inputCard) inputCard.classList.add('review-trend');
+}
+
+function showReviewPanel(view) {
+  const progress = document.getElementById('progress-dashboard-wrap');
+  if (progress) progress.dataset.reviewView = view;
+  document.querySelectorAll('.review-seg-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.review === view));
+}
+
+function renderProgress() {
+  renderCoachSettings();
+  renderWeeklyReport();
+  renderModeDashboard();
+  renderWeeklyVolume();
+  renderGoalDashboard();
+  renderRoleVolume();
+  renderCoachInsights();
+  renderHeatmap();
+  renderProgStats();
+  renderProgChart();
+  renderProgList();
+  applyReviewGrouping();
+  cleanStaticText();
+}
+
+const _uiBaseMountProgressTab = mountProgressTab;
+mountProgressTab = function() {
+  _uiBaseMountProgressTab();
+  ensureReviewSegment();
+};
+
+const _uiBaseRenderAll = renderAll;
+renderAll = function() {
+  _uiBaseRenderAll();
+  cleanStaticText();
+  applyReviewGrouping();
+};
+
+const _uiBaseRenderInstallCard = renderInstallCard;
+renderInstallCard = function() {
+  _uiBaseRenderInstallCard();
+  const card = document.getElementById('install-card');
+  if (card && card.classList.contains('show')) {
+    card.innerHTML = `<div><div class="install-title">安裝 FITNESS</div><div class="install-sub">加入主畫面後會像 app 一樣開啟。</div></div><button class="install-btn" onclick="installApp()">安裝</button>`;
+  }
+};
+
+cleanStaticText();
 
 </script>
 </body>
