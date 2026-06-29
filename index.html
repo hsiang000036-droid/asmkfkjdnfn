@@ -932,7 +932,7 @@
   #tab0 > .water-wrap,
   #tab0 > .divider,
   #tab0 > .hint-box{display:none!important}
-  #tabbar{left:12px;right:12px;bottom:10px;border-radius:22px;padding:8px calc(8px + env(safe-area-inset-right)) calc(8px + var(--safe-b)) calc(8px + env(safe-area-inset-left));gap:6px;border:1px solid rgba(255,255,255,.06)}
+  #tabbar{left:12px;right:12px;bottom:calc(8px + var(--safe-b));border-radius:22px;padding:7px calc(8px + env(safe-area-inset-right)) 7px calc(8px + env(safe-area-inset-left));gap:6px;border:1px solid rgba(255,255,255,.06)}
   .tab-btn{min-height:46px;border-radius:16px;font-size:12px;letter-spacing:0}
   .tab-btn.active{background:#18240c;box-shadow:inset 0 0 0 1px rgba(200,245,55,.28),0 8px 24px rgba(0,0,0,.28)}
   .page-title-block{padding:4px 2px 14px}
@@ -953,9 +953,10 @@
   #tab0 .weight-card{margin-top:10px}
 
   /* Final app polish pass */
-  #hero.expanded{max-height:164px}
+  #scroll{padding-bottom:calc(156px + var(--safe-b))}
+  #hero.expanded{max-height:202px}
   #hero.collapsed{max-height:46px}
-  #hero-expanded{padding:calc(14px + var(--safe-t)) 18px 0}
+  #hero-expanded{padding:calc(13px + var(--safe-t)) 18px 0}
   .hero-eyebrow{font-size:9px;letter-spacing:2px;margin-bottom:5px}
   .hero-title{font-size:28px;margin-bottom:4px}
   .hero-sub{font-size:11px;letter-spacing:.5px}
@@ -1017,6 +1018,49 @@
     .weekly-coach .weekly-hl-row{grid-template-columns:58px 1fr}
   }
 
+</style>
+<style id="mobile-layout-fix">
+  #scroll{padding-bottom:calc(156px + var(--safe-b))}
+  #hero.expanded{max-height:202px}
+  #tabbar{bottom:calc(8px + var(--safe-b));padding-top:7px;padding-bottom:7px}
+  .check-box.checked::after{content:"✓";font-size:15px;color:#000;font-weight:900;line-height:1}
+</style>
+<style id="final-product-polish">
+  .diary-card{background:var(--card);border:1px solid var(--border-soft);border-radius:16px;margin-bottom:10px;overflow:hidden}
+  .diary-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:13px 14px;border-bottom:1px solid var(--border-soft)}
+  .diary-title{font-size:15px;font-weight:900;color:var(--text)}
+  .diary-sub{font-size:11px;color:#7c8479;line-height:1.45;margin-top:3px}
+  .diary-pill{font-size:11px;font-weight:900;color:var(--primary);background:#17220d;border:1px solid #314912;border-radius:999px;padding:5px 9px;white-space:nowrap}
+  .diary-empty{padding:14px;color:#747c74;font-size:12px;line-height:1.7}
+  #food-log-wrap{display:block!important}
+  #food-log-wrap .food-cat-label{display:none}
+  #food-log-list{border:0;margin:0;border-radius:0;background:transparent}
+  .food-log-item{border-bottom:1px solid var(--border-soft)}
+  .food-log-item:last-child{border-bottom:0}
+
+  .coach-snapshot{background:linear-gradient(180deg,#10170b,#090b09);border:1px solid #263713;border-radius:18px;margin-bottom:10px;overflow:hidden}
+  .coach-snapshot-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:15px 15px 12px;border-bottom:1px solid var(--border-soft)}
+  .coach-snapshot-kicker{font-size:10px;color:var(--primary);letter-spacing:2px;font-weight:900;margin-bottom:6px}
+  .coach-snapshot-title{font-size:22px;font-weight:900;line-height:1.1;color:var(--text)}
+  .coach-score{font-size:28px;font-weight:900;color:var(--primary);line-height:1}
+  .coach-score small{font-size:12px;color:#737b70}
+  .coach-snapshot-body{padding:13px 15px;color:#c9cec4;font-size:13px;line-height:1.7}
+  .coach-snapshot-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 15px 15px}
+  .coach-mini{background:#0c0f0b;border:1px solid var(--border-soft);border-radius:12px;padding:10px}
+  .coach-mini-k{font-size:10px;color:#737b70;margin-bottom:4px}
+  .coach-mini-v{font-size:13px;font-weight:800;color:var(--text)}
+
+  .app-card,.mode-dash,.weekly-report,.goal-dash,.volume-wrap,.coach-card,.insight-card,.week-diet-wrap,.wc-chart-wrap,.orm-wrap{border-radius:16px}
+  .rec-banner{border-radius:14px}
+  .food-menu{gap:8px}
+  .food-btn{border-radius:14px}
+  .btn-save,.action-btn,.diet-history-btn,.quick-log-save,.quick-log-skip{border-radius:12px}
+  @media (max-width:380px){
+    #hero.expanded{max-height:210px}
+    #scroll{padding-bottom:calc(168px + var(--safe-b))}
+    .workout-day-title{font-size:20px}
+    .ex-name{font-size:15px}
+  }
 </style>
 </head>
 <body>
@@ -6775,7 +6819,134 @@ renderInstallCard = function() {
   }
 };
 
+function getTodayDietSummaryText() {
+  const targets = getDietTargets();
+  const kcalLeft = Math.max(0, targets.kcal - todayCalories);
+  const proLeft = Math.max(0, targets.protein - todayProtein);
+  if (!todayFoodLog.length) return `還沒記錄飲食。今天目標 ${targets.kcal.toLocaleString()} kcal / ${targets.protein}g 蛋白質。`;
+  return `已記 ${todayCalories.toLocaleString()} kcal / ${todayProtein}g 蛋白質，剩 ${kcalLeft.toLocaleString()} kcal / ${proLeft}g。`;
+}
+
+function enhanceDietDiaryLayout() {
+  const todayWrap = document.getElementById('diet-today-wrap');
+  const foodLog = document.getElementById('food-log-wrap');
+  if (!todayWrap || !foodLog) return;
+  let diary = document.getElementById('diet-diary-card');
+  if (!diary) {
+    diary = document.createElement('div');
+    diary.id = 'diet-diary-card';
+    diary.className = 'diary-card';
+    const tracker = todayWrap.querySelector('.tracker-dashboard');
+    if (tracker) tracker.insertAdjacentElement('afterend', diary);
+    else todayWrap.insertAdjacentElement('afterbegin', diary);
+  }
+  diary.innerHTML = `<div class="diary-head">
+    <div><div class="diary-title">今天吃了什麼</div><div class="diary-sub">${getTodayDietSummaryText()}</div></div>
+    <div class="diary-pill">${todayFoodLog.length} 筆</div>
+  </div>`;
+  diary.appendChild(foodLog);
+  if (!todayFoodLog.length) {
+    const list = document.getElementById('food-log-list');
+    if (list) list.innerHTML = `<div class="diary-empty">先記第一筆，之後這裡會變成你的每日飲食日記。</div>`;
+  }
+}
+
+function getCoachSnapshotData() {
+  const exList = window._todayExList || [];
+  const completion = getWorkoutCompletionStats(exList);
+  const dietStats = getDetailedDietStats();
+  const proteinRate = dietStats.loggedDays ? dietStats.proteinOk / dietStats.loggedDays : 0;
+  const kcalRisk = dietStats.loggedDays ? dietStats.over / dietStats.loggedDays : 0;
+  let score = 62;
+  score += Math.min(22, Math.round(proteinRate * 22));
+  score += Math.max(0, 10 - Math.round(kcalRisk * 14));
+  score += completion.complete ? 8 : Math.round((completion.requiredDone / Math.max(1, completion.required)) * 8);
+  score = Math.max(45, Math.min(96, score));
+  let title = '穩定度優先';
+  let body = '這週先把訓練完成、蛋白質和熱量穩定做好，體態變化會比較可靠。';
+  if (score >= 82) {
+    title = '方向正確';
+    body = '本週執行狀態不錯，下週重點是維持節奏，不需要大改菜單。';
+  } else if (proteinRate < 0.55) {
+    title = '蛋白質先補穩';
+    body = '最大缺口是蛋白質天數不足。下週先固定每天一份乳清或雞胸，會比再加訓練更有效。';
+  } else if (kcalRisk > 0.35) {
+    title = '熱量波動偏大';
+    body = '熱量超標天數偏多，先把外食或週末上限抓住，腰線才會明顯變乾淨。';
+  }
+  return {
+    score, title, body,
+    proteinText: dietStats.loggedDays ? `${dietStats.proteinOk}/${dietStats.loggedDays} 天` : '未記錄',
+    kcalText: dietStats.avgCal ? `${dietStats.avgCal.toLocaleString()} kcal` : '未記錄'
+  };
+}
+
+function renderCoachSnapshot() {
+  const progress = document.getElementById('progress-dashboard-wrap');
+  if (!progress) return;
+  let card = document.getElementById('coach-snapshot');
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'coach-snapshot';
+    card.className = 'coach-snapshot review-week';
+    progress.insertAdjacentElement('afterbegin', card);
+  }
+  const d = getCoachSnapshotData();
+  card.innerHTML = `<div class="coach-snapshot-head">
+    <div><div class="coach-snapshot-kicker">COACH</div><div class="coach-snapshot-title">${d.title}</div></div>
+    <div class="coach-score">${d.score}<small>分</small></div>
+  </div>
+  <div class="coach-snapshot-body">${d.body}</div>
+  <div class="coach-snapshot-actions">
+    <div class="coach-mini"><div class="coach-mini-k">蛋白質達標</div><div class="coach-mini-v">${d.proteinText}</div></div>
+    <div class="coach-mini"><div class="coach-mini-k">平均熱量</div><div class="coach-mini-v">${d.kcalText}</div></div>
+  </div>`;
+}
+
+function scrollToNextExercise(doneIdx) {
+  const exList = window._todayExList || [];
+  const nextIdx = exList.findIndex((_, idx) => idx > doneIdx && !dayChecked[idx]);
+  const target = document.getElementById(`exitem-today-${nextIdx >= 0 ? nextIdx : doneIdx}`);
+  if (!target) return;
+  setTimeout(() => target.scrollIntoView({ behavior:'smooth', block:'center' }), 180);
+}
+
+const _productBaseUpdateDietDisplay = updateDietDisplay;
+updateDietDisplay = function() {
+  _productBaseUpdateDietDisplay();
+  enhanceDietDiaryLayout();
+};
+
+const _productBaseRenderFoodLog = renderFoodLog;
+renderFoodLog = function() {
+  _productBaseRenderFoodLog();
+  enhanceDietDiaryLayout();
+};
+
+const _productBaseRenderProgress = renderProgress;
+renderProgress = function() {
+  _productBaseRenderProgress();
+  renderCoachSnapshot();
+  applyReviewGrouping();
+};
+
+const _productBaseFinishQuickLog = _finishQuickLog;
+_finishQuickLog = function(i) {
+  _productBaseFinishQuickLog(i);
+  const completion = getWorkoutCompletionStats(window._todayExList || []);
+  if (!completion.complete) scrollToNextExercise(i);
+};
+
+const _productBaseRenderAll = renderAll;
+renderAll = function() {
+  _productBaseRenderAll();
+  enhanceDietDiaryLayout();
+  renderCoachSnapshot();
+};
+
 cleanStaticText();
+enhanceDietDiaryLayout();
+renderCoachSnapshot();
 
 </script>
 </body>
